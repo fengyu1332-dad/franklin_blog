@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Notes on a Quieter Life</title>
+    <link>https://janedoe.com</link>
+    <description>Essays, photography, and reflections on finding meaning in the spaces between the noise.</description>
+    <language>en-us</language>
+    <atom:link href="https://janedoe.com/rss.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>The Art of Slow Travel: Finding Meaning in the In-Between</title>
+      <link>https://janedoe.com/post/the-art-of-slow-travel</link>
+      <guid>https://janedoe.com/post/the-art-of-slow-travel</guid>
+      <pubDate>Thu, 12 Oct 2023 00:00:00 +0000</pubDate>
+      <description>Why rushing from landmark to landmark is ruining our ability to truly experience the world around us.</description>
+    </item>
+    <item>
+      <title>Embracing Analog in a Hyper-Digital Age</title>
+      <link>https://janedoe.com/post/analog-photography-digital-age</link>
+      <guid>https://janedoe.com/post/analog-photography-digital-age</guid>
+      <pubDate>Thu, 28 Sep 2023 00:00:00 +0000</pubDate>
+      <description>There is something profoundly grounding about the mechanical click of a shutter and the anticipation of developing film.</description>
+    </item>
+    <item>
+      <title>Morning Rituals That Actually Work</title>
+      <link>https://janedoe.com/post/morning-rituals</link>
+      <guid>https://janedoe.com/post/morning-rituals</guid>
+      <pubDate>Fri, 15 Sep 2023 00:00:00 +0000</pubDate>
+      <description>Beyond the 5 AM club: finding a morning routine that respects your natural rhythms rather than fighting them.</description>
+    </item>
+    <item>
+      <title>The Architecture of Silence</title>
+      <link>https://janedoe.com/post/architecture-of-silence</link>
+      <guid>https://janedoe.com/post/architecture-of-silence</guid>
+      <pubDate>Wed, 30 Aug 2023 00:00:00 +0000</pubDate>
+      <description>Exploring spaces designed specifically to cultivate quiet and reflection in modern cities.</description>
+    </item>
+    <item>
+      <title>The Taste of Memory</title>
+      <link>https://janedoe.com/post/taste-of-memory</link>
+      <guid>https://janedoe.com/post/taste-of-memory</guid>
+      <pubDate>Sat, 12 Aug 2023 00:00:00 +0000</pubDate>
+      <description>How a simple bowl of broth transported me back to a rainy afternoon in Kyoto.</description>
+    </item>
+  </channel>
+</rss>
