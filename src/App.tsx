@@ -10,6 +10,7 @@ const Photography = lazy(() => import("./pages/Photography").then((m) => ({ defa
 const Archive = lazy(() => import("./pages/Archive").then((m) => ({ default: m.Archive })));
 const TagPage = lazy(() => import("./pages/TagPage").then((m) => ({ default: m.TagPage })));
 const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
+const Admin = lazy(() => import("./pages/Admin").then((m) => ({ default: m.Admin })));
 
 function PageLoader() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/archive" element={<Archive />} />
             <Route path="/tag/:tag" element={<TagPage />} />
             <Route path="/post/:slug" element={<Post />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

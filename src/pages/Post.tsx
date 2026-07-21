@@ -11,6 +11,8 @@ import { Footer } from "../components/Footer";
 import { AuthorInfo } from "../components/AuthorInfo";
 import { QuoteEmbed } from "../components/QuoteEmbed";
 import { ImageEmbed } from "../components/ImageEmbed";
+import { VideoEmbed } from "../components/VideoEmbed";
+import { AudioEmbed } from "../components/AudioEmbed";
 import { FadeImage } from "../components/FadeImage";
 
 const contentModules = import.meta.glob<string>(
@@ -40,7 +42,15 @@ export function Post() {
 
   const content = useMemo(() => {
     if (!article) return "";
-    return getMarkdownContent(article.contentFile);
+    const raw = getMarkdownContent(article.contentFile);
+    // Convert :video{src="..."} and :audio{src="..."} directives to markdown image syntax
+    return raw
+      .replace(/:video\{src="([^"]+)"(?:\s+title="([^"]*)")?\s*\}/g, (_, src, title) =>
+        `![${title || "Video"}](${src} "video")`
+      )
+      .replace(/:audio\{src="([^"]+)"(?:\s+title="([^"]*)")?\s*\}/g, (_, src, title) =>
+        `![${title || "Audio"}](${src} "audio")`
+      );
   }, [article]);
 
   if (!article) {
@@ -160,6 +170,12 @@ const markdownComponents: ComponentProps<typeof ReactMarkdown>["components"] = {
 
   img({ src, alt, title }) {
     if (!src) return null;
+    if (title === "video") {
+      return <VideoEmbed src={src} title={alt ?? undefined} />;
+    }
+    if (title === "audio") {
+      return <AudioEmbed src={src} title={alt ?? undefined} />;
+    }
     const size = (title as "default" | "wide" | "full" | undefined) || "default";
     return <ImageEmbed src={src} alt={alt ?? ""} caption={alt ?? undefined} size={size} />;
   },

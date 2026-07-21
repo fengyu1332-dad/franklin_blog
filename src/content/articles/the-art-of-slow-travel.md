@@ -1,10 +1,15 @@
 ---
-title: "The Art of Slow Travel: Finding Meaning in the In-Between"
-excerpt: "Why rushing from landmark to landmark is ruining our ability to truly experience the world around us."
-coverImage: "https://picsum.photos/seed/slowtravel/1600/900"
-date: "October 12, 2023"
-readTime: "8 min read"
-tags: ["Travel", "Mindfulness", "Photography"]
+title: 'The Art of Slow Travel: Finding Meaning in the In-Between'
+excerpt: >-
+  Why rushing from landmark to landmark is ruining our ability to truly
+  experience the world around us.
+coverImage: 'https://picsum.photos/seed/slowtravel/1600/900'
+date: 'October 12, 2023'
+readTime: 8 min read
+tags:
+  - Travel
+  - Mindfulness
+  - Photography
 ---
 
 There is a peculiar anxiety that accompanies modern travel. It begins the moment you land in a new city — the quiet panic that you are not seeing enough, doing enough, experiencing enough. Guidebooks and Instagram feeds have conspired to convince us that a trip is only successful if every hour is accounted for, every landmark checked off a list.
@@ -28,6 +33,7 @@ On a recent trip to Kyoto, I decided to try something radical: I threw away my i
 ![image-embed](https://picsum.photos/seed/kyoto-garden/1200/800 "A quiet corner of Ryoanji temple garden" wide)
 
 What I discovered was that the city revealed itself in ways no guidebook could have predicted. A conversation with an elderly shopkeeper who insisted on showing me his collection of vintage cameras. The smell of roasting tea leaves drifting from an unmarked doorway. The way cherry blossoms sound when the wind passes through them — a soft whisper, like pages turning.
+![d26c2031-b403-4718-8d92-d7d54bceca0f.jpg](/uploads/b26352a0-df78-4a72-a339-0f697823c50b.jpg "wide")
 
 ## The Gift of Boredom
 

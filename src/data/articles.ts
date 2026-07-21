@@ -30,7 +30,7 @@ export const defaultAuthor: Author = {
 
 export const articles: Article[] = [
   {
-    id: "1",
+    id: "the-art-of-slow-travel",
     slug: "the-art-of-slow-travel",
     title: "The Art of Slow Travel: Finding Meaning in the In-Between",
     excerpt: "Why rushing from landmark to landmark is ruining our ability to truly experience the world around us.",
@@ -42,7 +42,7 @@ export const articles: Article[] = [
     contentFile: "the-art-of-slow-travel.md",
   },
   {
-    id: "2",
+    id: "analog-photography-digital-age",
     slug: "analog-photography-digital-age",
     title: "Embracing Analog in a Hyper-Digital Age",
     excerpt: "There is something profoundly grounding about the mechanical click of a shutter and the anticipation of developing film.",
@@ -54,7 +54,7 @@ export const articles: Article[] = [
     contentFile: "analog-photography-digital-age.md",
   },
   {
-    id: "3",
+    id: "morning-rituals",
     slug: "morning-rituals",
     title: "Morning Rituals That Actually Work",
     excerpt: "Beyond the 5 AM club: finding a morning routine that respects your natural rhythms rather than fighting them.",
@@ -66,7 +66,7 @@ export const articles: Article[] = [
     contentFile: "morning-rituals.md",
   },
   {
-    id: "4",
+    id: "architecture-of-silence",
     slug: "architecture-of-silence",
     title: "The Architecture of Silence",
     excerpt: "Exploring spaces designed specifically to cultivate quiet and reflection in modern cities.",
@@ -78,7 +78,7 @@ export const articles: Article[] = [
     contentFile: "architecture-of-silence.md",
   },
   {
-    id: "5",
+    id: "taste-of-memory",
     slug: "taste-of-memory",
     title: "The Taste of Memory",
     excerpt: "How a simple bowl of broth transported me back to a rainy afternoon in Kyoto.",
