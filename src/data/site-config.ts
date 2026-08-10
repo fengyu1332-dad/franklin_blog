@@ -1,18 +1,18 @@
 export const siteConfig = {
-  name: "Jane Doe",
+  name: "Franklin HUANG",
   title: "Notes on a Quieter Life",
   description:
-    "Essays, photography, and reflections on finding meaning in the spaces between the noise.",
-  url: "https://janedoe.com",
+    "Curious about how things work — from circuits to ecosystems. Notes on building projects, exploring science, and discovering the world one question at a time.",
+  url: "https://franklinhuang.com",
   ogImage: "https://picsum.photos/seed/site-og/1200/630",
   social: {
-    twitter: "https://twitter.com/janedoe",
-    instagram: "https://instagram.com/jane.captures",
-    email: "mailto:hello@janedoe.com",
-    substack: "https://janedoe.substack.com",
+    twitter: "https://twitter.com/franklinhuang",
+    instagram: "https://instagram.com/franklin.captures",
+    email: "mailto:hello@franklinhuang.com",
   },
   nav: [
     { name: "Home", path: "/" },
+    { name: "Lab", path: "/lab" },
     { name: "Essays", path: "/archive" },
     { name: "Photography", path: "/photography" },
     { name: "About", path: "/about" },

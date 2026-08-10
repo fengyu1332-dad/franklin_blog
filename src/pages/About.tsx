@@ -31,7 +31,7 @@ export function About() {
             <div className="w-full md:w-1/2">
               <div className="aspect-[4/5] overflow-hidden rounded-sm bg-ink/5 sticky top-24">
                 <FadeImage 
-                  src={defaultAuthor.avatar.replace('200/200', '800/1000')} 
+                  src={defaultAuthor.avatar}
                   alt={defaultAuthor.name} 
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
@@ -41,27 +41,27 @@ export function About() {
             
             <div className="w-full md:w-1/2 flex flex-col justify-center pt-8 md:pt-0">
               <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-medium text-ink mb-8 tracking-tight">
-                About Jane
+                About
               </h1>
               <div className="prose prose-stone prose-lg prose-p:leading-relaxed prose-p:text-ink-light">
                 <p className="text-2xl font-serif italic text-ink mb-8 leading-snug">
                   {defaultAuthor.bio}
                 </p>
                 <p>
-                  I started this space as a way to document the quiet moments that often go unnoticed. In a world that constantly demands our attention and pushes us to move faster, I found myself craving stillness.
+                  I'm a high school student who spends a lot of free time tinkering with code, taking apart old electronics, and trying to understand how the physical world fits together. This site is where I share what I'm working on and what I'm learning along the way.
                 </p>
                 <p>
-                  Through my photography and essays, I explore the intersection of travel, mindfulness, and the art of paying attention. Whether I'm wandering through the bustling streets of Tokyo or sitting in a quiet cafe in Paris, my goal is always to capture the essence of a place and the feeling of being fully present in it.
+                  When I'm not buried in a textbook or debugging something, you'll find me outdoors — hiking trails, watching birds, staring at clouds, or just paying attention to the small details in nature that are easy to miss.
                 </p>
                 <p>
-                  Thank you for being here. I hope these stories inspire you to slow down, look closer, and find your own moments of quiet amidst the noise.
+                  I believe the best way to learn is to build and to ask questions — especially the ones that don't have easy answers. If you're into any of this too, I'd love to connect.
                 </p>
               </div>
-              
+
               <div className="mt-16 pt-12 border-t border-ink/10">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-ink mb-6">Connect & Inquiries</h3>
                 <div className="flex flex-col gap-4">
-                  <a href={siteConfig.social.email} className="text-ink-light hover:text-accent transition-colors font-medium">hello@janedoe.com</a>
+                  <a href={siteConfig.social.email} className="text-ink-light hover:text-accent transition-colors font-medium">{siteConfig.social.email.replace("mailto:", "")}</a>
                   <a href={siteConfig.social.twitter} target="_blank" rel="noreferrer" className="text-ink-light hover:text-accent transition-colors font-medium">Twitter: {defaultAuthor.twitter}</a>
                   <a href={siteConfig.social.instagram} target="_blank" rel="noreferrer" className="text-ink-light hover:text-accent transition-colors font-medium">Instagram: {defaultAuthor.instagram}</a>
                 </div>

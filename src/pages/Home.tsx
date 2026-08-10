@@ -1,15 +1,15 @@
 import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { articles } from "../data/articles";
+import { publishedArticles } from "../data/articles";
 import { ArticleCard } from "../components/ArticleCard";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { siteConfig } from "../data/site-config";
 
 export function Home() {
-  const featuredArticle = articles[0];
-  const remainingArticles = articles.slice(1);
+  const featuredArticle = publishedArticles[0];
+  const remainingArticles = publishedArticles.slice(1);
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">

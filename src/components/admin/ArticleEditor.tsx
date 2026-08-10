@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ImageIcon, Video, Music, Loader2 } from "lucide-react";
+import { ImageIcon, Video, Music, Loader2, Eye, Edit } from "lucide-react";
 import { ImageEmbed } from "../ImageEmbed";
 import { VideoEmbed } from "../VideoEmbed";
 import { AudioEmbed } from "../AudioEmbed";
@@ -16,6 +16,7 @@ export interface ArticleData {
   readTime: string;
   tags: string;
   content: string;
+  status: "published" | "draft";
 }
 
 interface ArticleEditorProps {
@@ -23,6 +24,7 @@ interface ArticleEditorProps {
   onSave: (data: ArticleData) => void;
   onCancel: () => void;
   isNew?: boolean;
+  allTags?: string[];
 }
 
 const emptyArticle: ArticleData = {
@@ -33,18 +35,34 @@ const emptyArticle: ArticleData = {
   readTime: "5 min read",
   tags: "",
   content: "",
+  status: "draft",
 };
 
-export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEditorProps) {
-  const [data, setData] = useState<ArticleData>({ ...emptyArticle, ...initial });
+export function ArticleEditor({ initial, onSave, onCancel, isNew, allTags = [] }: ArticleEditorProps) {
+  // Use the initial prop directly as the starting state; don't react to prop changes
+  const initialRef = useRef(initial);
+  const [data, setData] = useState<ArticleData>(() => {
+    if (initialRef.current) {
+      return { ...emptyArticle, ...initialRef.current };
+    }
+    return { ...emptyArticle };
+  });
+
   const [showPreview, setShowPreview] = useState(false);
-  const [uploading, setUploading] = useState<string | null>(null); // "image" | "video" | "audio" | null
+  const [uploading, setUploading] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [tagInput, setTagInput] = useState("");
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    if (initial) setData((prev) => ({ ...prev, ...initial }));
-  }, [initial]);
+  const tagSuggestions = useMemo(() => {
+    if (!tagInput.trim()) return [];
+    const lower = tagInput.toLowerCase();
+    return allTags.filter(
+      (t) => t.toLowerCase().includes(lower) && !data.tags.split(",").map((x) => x.trim().toLowerCase()).includes(t.toLowerCase())
+    );
+  }, [tagInput, allTags, data.tags]);
 
   function update<K extends keyof ArticleData>(key: K, value: ArticleData[K]) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -54,6 +72,26 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEdito
     e.preventDefault();
     if (!data.title.trim()) return;
     onSave(data);
+  }
+
+  function addTag(tag: string) {
+    const current = data.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (!current.includes(tag)) {
+      update("tags", [...current, tag].join(", "));
+    }
+    setTagInput("");
+    setShowTagSuggestions(false);
+  }
+
+  function removeTag(tag: string) {
+    const current = data.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t && t !== tag);
+    update("tags", current.join(", "));
   }
 
   function insertAtCursor(tag: string) {
@@ -67,7 +105,6 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEdito
     const before = data.content.slice(0, start);
     const after = data.content.slice(end);
     update("content", before + tag + after);
-    // Restore cursor after the inserted tag
     setTimeout(() => {
       textarea.focus();
       textarea.setSelectionRange(start + tag.length, start + tag.length);
@@ -112,8 +149,46 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEdito
         setUploading(null);
         alert("Upload failed. Network error.");
       });
+      // Include auth token for upload
+      const token = sessionStorage.getItem("admin_token");
       xhr.open("POST", "/api/upload");
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
       xhr.send(formData);
+    };
+    input.click();
+  }
+
+  function handleCoverUpload() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+
+      setCoverUploading(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const token = sessionStorage.getItem("admin_token");
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        });
+        if (res.ok) {
+          const { url } = await res.json();
+          update("coverImage", url);
+        } else {
+          alert("Cover upload failed. Please try again.");
+        }
+      } catch {
+        alert("Cover upload failed. Network error.");
+      } finally {
+        setCoverUploading(false);
+      }
     };
     input.click();
   }
@@ -126,6 +201,11 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEdito
     .replace(/:audio\{src="([^"]+)"(?:\s+title="([^"]*)")?\s*\}/g, (_, src, title) =>
       `![${title || "Audio"}](${src} "audio")`
     );
+
+  const tagList = data.tags
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full">
@@ -184,9 +264,17 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEdito
           <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
-            className="px-4 py-2 text-sm font-medium text-ink-light hover:text-ink transition-colors border border-ink/10 rounded-sm"
+            className="px-4 py-2 inline-flex items-center gap-2 text-sm font-medium text-ink-light hover:text-ink transition-colors border border-ink/10 rounded-sm"
           >
-            {showPreview ? "Edit" : "Preview"}
+            {showPreview ? (
+              <>
+                <Edit className="h-4 w-4" /> Edit
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4" /> Preview
+              </>
+            )}
           </button>
           <button
             type="button"
@@ -235,6 +323,33 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEdito
                 />
               </Field>
 
+              <Field label="Status">
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="published"
+                      checked={data.status === "published"}
+                      onChange={() => update("status", "published")}
+                      className="text-accent"
+                    />
+                    <span className="text-sm text-ink">Published</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="draft"
+                      checked={data.status === "draft"}
+                      onChange={() => update("status", "draft")}
+                      className="text-amber-500"
+                    />
+                    <span className="text-sm text-ink">Draft</span>
+                  </label>
+                </div>
+              </Field>
+
               <Field label="Excerpt">
                 <textarea
                   value={data.excerpt}
@@ -245,14 +360,49 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEdito
                 />
               </Field>
 
-              <Field label="Cover Image URL">
-                <input
-                  type="text"
-                  value={data.coverImage}
-                  onChange={(e) => update("coverImage", e.target.value)}
-                  className="w-full border border-ink/10 rounded-sm px-3 py-2.5 text-sm bg-transparent focus:border-accent focus:outline-none transition-colors"
-                  placeholder="https://..."
-                />
+              <Field label="Cover Image">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={data.coverImage}
+                    onChange={(e) => update("coverImage", e.target.value)}
+                    className="flex-1 border border-ink/10 rounded-sm px-3 py-2.5 text-sm bg-transparent focus:border-accent focus:outline-none transition-colors"
+                    placeholder="https://... or upload a local image"
+                  />
+                  <button
+                    type="button"
+                    disabled={coverUploading}
+                    onClick={handleCoverUpload}
+                    title="Upload local image as cover"
+                    className="inline-flex items-center gap-1.5 rounded-sm border border-ink/10 px-3 py-2 text-sm font-medium text-ink-light hover:text-ink disabled:opacity-40 transition-colors shrink-0"
+                  >
+                    {coverUploading ? (
+                      <>
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-ink/20 border-t-accent" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="h-4 w-4" />
+                        Upload
+                      </>
+                    )}
+                  </button>
+                </div>
+                {data.coverImage && (
+                  <div className="mt-2 aspect-[16/9] w-full overflow-hidden rounded-sm border border-ink/10 bg-ink/5">
+                    <img
+                      src={data.coverImage}
+                      alt="Cover preview"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                        (e.target as HTMLImageElement).nextElementSibling!.textContent = "Image failed to load";
+                      }}
+                      className="h-full w-full object-cover"
+                    />
+                    <span className="hidden" />
+                  </div>
+                )}
               </Field>
 
               <div className="grid grid-cols-2 gap-4">
@@ -277,13 +427,64 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew }: ArticleEdito
               </div>
 
               <Field label="Tags (comma-separated)">
-                <input
-                  type="text"
-                  value={data.tags}
-                  onChange={(e) => update("tags", e.target.value)}
-                  className="w-full border border-ink/10 rounded-sm px-3 py-2.5 text-sm bg-transparent focus:border-accent focus:outline-none transition-colors"
-                  placeholder="Travel, Photography"
-                />
+                {/* Tag chips */}
+                {tagList.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {tagList.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 rounded-full bg-ink/5 px-2 py-0.5 text-xs text-ink"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="text-ink-light hover:text-red-500 transition-colors"
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => {
+                      setTagInput(e.target.value);
+                      setShowTagSuggestions(true);
+                    }}
+                    onFocus={() => setShowTagSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === ",") {
+                        e.preventDefault();
+                        if (tagInput.trim()) addTag(tagInput.trim());
+                      }
+                      if (e.key === "Backspace" && !tagInput && tagList.length > 0) {
+                        removeTag(tagList[tagList.length - 1]);
+                      }
+                    }}
+                    className="w-full border border-ink/10 rounded-sm px-3 py-2.5 text-sm bg-transparent focus:border-accent focus:outline-none transition-colors"
+                    placeholder="Type and press Enter to add..."
+                  />
+                  {showTagSuggestions && tagSuggestions.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full rounded-sm border border-ink/10 bg-white shadow-lg max-h-36 overflow-y-auto">
+                      {tagSuggestions.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => addTag(s)}
+                          className="w-full px-3 py-2 text-left text-sm text-ink hover:bg-ink/5 transition-colors"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </Field>
             </div>
 

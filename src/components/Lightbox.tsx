@@ -65,16 +65,23 @@ export function Lightbox({ isOpen, onClose, src, alt, caption }: LightboxProps) 
               referrerPolicy="no-referrer"
               className="max-h-[75vh] w-auto object-contain rounded-sm shadow-2xl shadow-black/60"
             />
-            {caption && (
-              <motion.div 
+            {(caption || alt) && (
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="mt-8 text-center"
               >
-                <p className="text-paper/90 font-serif text-xl md:text-2xl max-w-2xl italic leading-relaxed drop-shadow-md">
-                  {caption}
-                </p>
+                {caption && (
+                  <p className="text-paper/90 font-serif text-xl md:text-2xl max-w-2xl italic leading-relaxed drop-shadow-md">
+                    {caption}
+                  </p>
+                )}
+                {alt && (
+                  <p className="text-paper/50 text-sm md:text-base max-w-2xl drop-shadow-md mt-1">
+                    {alt}
+                  </p>
+                )}
               </motion.div>
             )}
           </motion.div>

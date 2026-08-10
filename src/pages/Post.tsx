@@ -4,7 +4,7 @@ import { useMemo, type ComponentProps } from "react";
 import { Helmet } from "react-helmet-async";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { articles } from "../data/articles";
+import { publishedArticles } from "../data/articles";
 import { siteConfig } from "../data/site-config";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -35,7 +35,7 @@ function getMarkdownContent(filename: string): string {
 
 export function Post() {
   const { slug } = useParams<{ slug: string }>();
-  const article = articles.find((a) => a.slug === slug);
+  const article = publishedArticles.find((a) => a.slug === slug);
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 1000], [0, 300]);
   const opacity = useTransform(scrollY, [0, 500], [1, 0]);

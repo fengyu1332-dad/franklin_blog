@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { ArticleCard } from "../components/ArticleCard";
-import { articles } from "../data/articles";
+import { publishedArticles } from "../data/articles";
 import { siteConfig } from "../data/site-config";
 
 export function Archive() {
@@ -37,7 +37,7 @@ export function Archive() {
           </motion.div>
 
           <div className="grid grid-cols-1 gap-x-8 gap-y-16 sm:grid-cols-2">
-            {articles.map((article, idx) => (
+            {publishedArticles.map((article, idx) => (
               <ArticleCard key={article.id} article={article} index={idx} />
             ))}
           </div>

@@ -17,6 +17,7 @@ export function Footer() {
             <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-light">Explore</h4>
             <nav className="flex flex-col gap-2">
               <Link to="/archive" className="text-sm hover:text-accent transition-colors">Essays</Link>
+              <Link to="/lab" className="text-sm hover:text-accent transition-colors">Lab</Link>
               <Link to="/photography" className="text-sm hover:text-accent transition-colors">Photography</Link>
               <Link to="/about" className="text-sm hover:text-accent transition-colors">About</Link>
             </nav>
@@ -27,18 +28,14 @@ export function Footer() {
             <nav className="flex flex-col gap-2">
               <a href={siteConfig.social.twitter} target="_blank" rel="noreferrer" className="text-sm hover:text-accent transition-colors">Twitter</a>
               <a href={siteConfig.social.instagram} target="_blank" rel="noreferrer" className="text-sm hover:text-accent transition-colors">Instagram</a>
-              <a href={siteConfig.social.substack} target="_blank" rel="noreferrer" className="text-sm hover:text-accent transition-colors">Substack</a>
               <a href={siteConfig.social.email} className="text-sm hover:text-accent transition-colors">Email</a>
             </nav>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-ink/5 pt-8 sm:flex-row text-center sm:text-left">
+        <div className="mt-12 flex flex-col items-center justify-center gap-4 border-t border-ink/5 pt-8">
           <p className="text-xs text-ink-light">
             &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
-          </p>
-          <p className="text-xs text-ink-light max-w-md sm:text-right">
-            Photos from <a href="https://unsplash.com" target="_blank" rel="noreferrer" className="underline hover:text-accent transition-colors">Unsplash</a>.
           </p>
         </div>
       </div>

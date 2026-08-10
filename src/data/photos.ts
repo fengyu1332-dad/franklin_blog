@@ -1,0 +1,145 @@
+export interface Photo {
+  id: string;
+  slug: string;
+  src: string;
+  alt: string;
+  caption: string;
+  width: number;
+  height: number;
+  status: "published" | "draft";
+}
+
+export const photos: Photo[] = [
+  {
+    id: "vastness",
+    slug: "vastness",
+    src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1600&h=1200&fit=crop",
+    alt: "Canyon",
+    caption: "Vastness",
+    width: 1600,
+    height: 1200,
+    status: "published",
+  },
+  {
+    id: "tokyo-2023",
+    slug: "tokyo-2023",
+    src: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=800&h=1200&fit=crop",
+    alt: "Urban landscape",
+    caption: "Tokyo, 2023",
+    width: 800,
+    height: 1200,
+    status: "published",
+  },
+  {
+    id: "swiss-alps",
+    slug: "swiss-alps",
+    src: "https://images.unsplash.com/photo-1531366936337-77850807abf8?q=80&w=1200&h=800&fit=crop",
+    alt: "Mountain range",
+    caption: "Swiss Alps",
+    width: 1200,
+    height: 800,
+    status: "published",
+  },
+  {
+    id: "strangers",
+    slug: "strangers",
+    src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&h=1000&fit=crop",
+    alt: "Portrait",
+    caption: "Strangers",
+    width: 800,
+    height: 1000,
+    status: "published",
+  },
+  {
+    id: "shadows-and-light",
+    slug: "shadows-and-light",
+    src: "https://images.unsplash.com/photo-1514565131-fce0801e5785?q=80&w=1200&h=1600&fit=crop",
+    alt: "Street photography",
+    caption: "Shadows and light",
+    width: 1200,
+    height: 1600,
+    status: "published",
+  },
+  {
+    id: "pacific-coast",
+    slug: "pacific-coast",
+    src: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=1600&h=900&fit=crop",
+    alt: "Ocean waves",
+    caption: "Pacific coast",
+    width: 1600,
+    height: 900,
+    status: "published",
+  },
+  {
+    id: "morning-rituals",
+    slug: "morning-rituals",
+    src: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=800&h=800&fit=crop",
+    alt: "Coffee shop",
+    caption: "Morning rituals",
+    width: 800,
+    height: 800,
+    status: "published",
+  },
+  {
+    id: "midnight",
+    slug: "midnight",
+    src: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?q=80&w=800&h=1200&fit=crop",
+    alt: "City lights",
+    caption: "Midnight",
+    width: 800,
+    height: 1200,
+    status: "published",
+  },
+  {
+    id: "into-the-woods",
+    slug: "into-the-woods",
+    src: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000&h=1200&fit=crop",
+    alt: "Forest path",
+    caption: "Into the woods",
+    width: 1000,
+    height: 1200,
+    status: "published",
+  },
+  {
+    id: "golden-hour",
+    slug: "golden-hour",
+    src: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=1200&h=800&fit=crop",
+    alt: "Desert dunes",
+    caption: "Golden hour",
+    width: 1200,
+    height: 800,
+    status: "published",
+  },
+  {
+    id: "details",
+    slug: "details",
+    src: "https://images.unsplash.com/photo-1505682634904-d7c8d95cdc50?q=80&w=800&h=800&fit=crop",
+    alt: "Still life",
+    caption: "Details",
+    width: 800,
+    height: 800,
+    status: "published",
+  },
+  {
+    id: "concrete-geometry",
+    slug: "concrete-geometry",
+    src: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?q=80&w=800&h=800&fit=crop",
+    alt: "Architecture",
+    caption: "Concrete geometry",
+    width: 800,
+    height: 800,
+    status: "published",
+  },
+  {
+    id: "2021-the-maijishan-grottoes",
+    slug: "2021-the-maijishan-grottoes",
+    src: "/uploads/87bad1d2-928b-450e-9b48-c5ea37fc9c19.jpg",
+    alt: "Got to check out the Maijishan Grottoes today, can't believe people built these amazing caves and walkways on a steep cliff so long ago. Hiked all the way up, the view and the ancient carvings are so worth every step of the climb.",
+    caption: "2021 the Maijishan Grottoes",
+    width: 4752,
+    height: 3168,
+    status: "published",
+  }
+];
+
+export const publishedPhotos: Photo[] = photos.filter(p => p.status !== "draft");
