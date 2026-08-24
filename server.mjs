@@ -765,7 +765,7 @@ app.delete("/api/photos/:slug", requireAuth, assertValidSlug, (req, res) => {
 
 // ─── SEO: dynamic RSS / sitemap / robots (registered before static files so they win) ───
 
-const SITE_URL = (process.env.SITE_URL || "https://remix-personal-blog-template.vercel.app").replace(/\/+$/, "");
+const SITE_URL = (process.env.SITE_URL || "https://franklinhuang-blog.vercel.app").replace(/\/+$/, "");
 const SITE_TITLE = "Notes on a Quieter Life";
 const SITE_DESC =
   "Essays, photography, and reflections on finding meaning in the spaces between the noise.";

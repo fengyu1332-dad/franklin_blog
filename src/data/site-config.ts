@@ -3,7 +3,7 @@ export const siteConfig = {
   title: "Notes on a Quieter Life",
   description:
     "Curious about how things work — from circuits to ecosystems. Notes on building projects, exploring science, and discovering the world one question at a time.",
-  url: "https://remix-personal-blog-template.vercel.app",
+  url: "https://franklinhuang-blog.vercel.app",
   ogImage: "/og-default.jpg",
   social: {
     twitter: "https://twitter.com/franklinhuang",
