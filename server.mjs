@@ -255,7 +255,7 @@ function listArticles({ includeDrafts = false } = {}) {
 function generateArticlesTs(articles) {
   const defaultAuthor = `{
   name: "Franklin HUANG",
-  avatar: "/uploads/avatar.png",
+  avatar: "/avatar.png",
   bio: "A high school student captivated by engineering, physics, and the natural world. Building things, asking why, and learning out loud.",
   twitter: "@franklinhuang",
   instagram: "@franklin.captures"
