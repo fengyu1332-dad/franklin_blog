@@ -3,10 +3,12 @@ import { cn } from "../lib/utils";
 
 export function FadeImage({ className, src, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (imgRef.current?.complete) {
+    setHasError(false);
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
       setIsLoaded(true);
     }
   }, [src]);
@@ -18,9 +20,14 @@ export function FadeImage({ className, src, ...props }: React.ImgHTMLAttributes<
       className={cn(
         "transition-all duration-700 ease-out",
         isLoaded ? "opacity-100 blur-0" : "opacity-0 blur-md",
+        hasError && "!opacity-100 !blur-0 bg-ink/5 object-contain p-4",
         className
       )}
       onLoad={() => setIsLoaded(true)}
+      onError={() => {
+        setHasError(true);
+        setIsLoaded(true);
+      }}
       {...props}
     />
   );

@@ -67,7 +67,6 @@ export function PhotoEditor({ initial, onSave, onCancel, isNew }: PhotoEditorPro
             iptc: true,
             exif: true,
           });
-          console.log("[PhotoEditor] Raw EXIF:", exifData);
           if (exifData) {
             // Title → Caption: Windows XPTitle / EXIF ImageDescription / XMP dc:title / IPTC ObjectName
             exifTitle = exifData.XPTitle
@@ -82,8 +81,6 @@ export function PhotoEditor({ initial, onSave, onCancel, isNew }: PhotoEditorPro
               || exifData["dc:subject"]
               || exifData.subject
               || "";
-            console.log("[PhotoEditor] Title → Caption:", exifTitle || "(none)");
-            console.log("[PhotoEditor] Subject → Alt Text:", exifSubject || "(none)");
           }
         } catch (exifErr) {
           console.warn("[PhotoEditor] EXIF read failed:", exifErr);

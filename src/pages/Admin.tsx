@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
-import { Plus, Edit2, Trash2, ArrowLeft, FileText, LogOut, FlaskConical, Camera } from "lucide-react";
+import { Plus, Edit2, Trash2, ArrowLeft, FileText, LogOut, FlaskConical, Camera, Eye } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/Toast";
 import { Login } from "./Login";
@@ -31,6 +31,7 @@ interface PhotoMeta {
   slug: string;
   caption: string;
   src: string;
+  size?: number | null;
   status: "published" | "draft";
 }
 
@@ -386,7 +387,7 @@ function ContentTable({ contentType, articles, projects, photos, onEdit, onDelet
                 <td className="px-6 py-4 hidden md:table-cell">
                   <TagList tags={a.tags} />
                 </td>
-                <td className="px-6 py-4"><ActionButtons slug={a.slug} onEdit={onEdit} onDelete={onDelete} /></td>
+                <td className="px-6 py-4"><ActionButtons slug={a.slug} onEdit={onEdit} onDelete={onDelete} previewSlug={a.status === "draft" ? a.slug : undefined} /></td>
               </tr>
             ))}
           </tbody>
@@ -453,7 +454,9 @@ function ContentTable({ contentType, articles, projects, photos, onEdit, onDelet
               </td>
               <td className="px-6 py-4"><span className="text-sm text-ink line-clamp-2">{p.caption || "Untitled"}</span></td>
               <td className="px-6 py-4 hidden sm:table-cell whitespace-nowrap"><StatusBadge status={p.status} /></td>
-              <td className="px-6 py-4 text-sm text-ink-light hidden sm:table-cell whitespace-nowrap">—</td>
+              <td className="px-6 py-4 text-sm text-ink-light hidden sm:table-cell whitespace-nowrap">
+                {typeof p.size === "number" ? formatBytes(p.size) : "—"}
+              </td>
               <td className="px-6 py-4"><ActionButtons slug={p.slug} onEdit={onEdit} onDelete={onDelete} /></td>
             </tr>
           ))}
@@ -461,6 +464,12 @@ function ContentTable({ contentType, articles, projects, photos, onEdit, onDelet
       </table>
     </div>
   );
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -483,9 +492,20 @@ function TagList({ tags }: { tags: string[] }) {
   );
 }
 
-function ActionButtons({ slug, onEdit, onDelete }: { slug: string; onEdit: (s: string) => void; onDelete: (s: string) => void }) {
+function ActionButtons({ slug, onEdit, onDelete, previewSlug }: { slug: string; onEdit: (s: string) => void; onDelete: (s: string) => void; previewSlug?: string }) {
   return (
     <div className="flex items-center gap-2">
+      {previewSlug && (
+        <a
+          href={`/post/${encodeURIComponent(previewSlug)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="p-2 text-ink-light hover:text-accent transition-colors"
+          title="Preview draft"
+        >
+          <Eye className="h-4 w-4" />
+        </a>
+      )}
       <button onClick={() => onEdit(slug)} className="p-2 text-ink-light hover:text-ink transition-colors" title="Edit">
         <Edit2 className="h-4 w-4" />
       </button>

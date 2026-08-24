@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Search, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { articles } from "../data/articles";
+import { publishedArticles } from "../data/articles";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -23,7 +23,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   }, [isOpen]);
 
   const results = query.length > 1 
-    ? articles.filter(a => 
+    ? publishedArticles.filter(a => 
         a.title.toLowerCase().includes(query.toLowerCase()) || 
         a.excerpt.toLowerCase().includes(query.toLowerCase()) ||
         a.tags.some(t => t.toLowerCase().includes(query.toLowerCase()))

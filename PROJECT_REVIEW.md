@@ -174,4 +174,15 @@
 - `/api/upload` 接入 sharp：EXIF 方向矫正 + 超 2048px 缩放 + JPEG/WebP 质量 82 / PNG 压缩级别 9，原地覆盖（URL 不变），GIF 跳过
 - 待办：现有 3 个大文件压缩（avatar 5.5MB→256px、87bad1d2 7.6MB→2048px、b26352a0 3.3MB→2048px）
 
-### 迭代 2~4：待开发（功能完善 / SEO·性能 / 工程化发布）
+### 迭代 2：功能与体验完善 ✅
+- **404 正确跳转**：Post 不存在 → `/404`（NotFound 页补 Header/Footer）
+- **草稿预览**：Post 页在未发布 slug 时用管理 token 拉取 `/api/articles/:slug` 渲染（含 Draft 徽标 + noindex）；Admin 文章列表对 draft 显示 Preview 按钮（新标签页）；后端行为验证：登录 200 / 匿名 404
+- **搜索排除草稿**：SearchOverlay 改用 `publishedArticles`
+- **Home 空状态保护**：无文章时显示占位提示，不渲染空卡片
+- **FadeImage onError 兜底**：加载失败显示浅色占位，不再永久不可见
+- **文章详情增强**：顶部阅读进度条（motion scroll + spring）、上一篇/下一篇导航、按共享标签推荐 3 篇相关文章（无封面兜底）
+- **Photos Size 列**：后端对 `/uploads/` 本地文件返回真实字节数，Admin 表格格式化显示（KB/MB），外链显示 "—"
+- **清理**：PhotoEditor 移除含 EXIF/GPS 的调试日志
+- 验证：tsc 零错误、build 通过（8.1s）、接口实测通过
+
+### 迭代 3~4：待开发（SEO·性能 / 工程化发布）

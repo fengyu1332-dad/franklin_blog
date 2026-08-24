@@ -610,14 +610,26 @@ function listPhotos({ includeDrafts = false } = {}) {
       const raw = fs.readFileSync(path.join(PHOTOS_DIR, filename), "utf8");
       const { data } = matter(raw);
       const slug = filename.replace(/\.md$/, "");
+      const src = data.src ?? "";
+      // Report real file size for locally-hosted uploads
+      let size = null;
+      if (typeof src === "string" && src.startsWith("/uploads/")) {
+        try {
+          const localFile = path.join(UPLOADS_DIR, path.basename(src));
+          if (fs.existsSync(localFile)) size = fs.statSync(localFile).size;
+        } catch {
+          /* non-fatal */
+        }
+      }
       return {
         id: data.id ?? slug,
         slug,
-        src: data.src ?? "",
+        src,
         alt: data.alt ?? "",
         caption: data.caption ?? "",
         width: data.width ?? 800,
         height: data.height ?? 800,
+        size,
         status: data.status ?? "draft",
       };
     })

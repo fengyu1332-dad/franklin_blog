@@ -10,6 +10,7 @@ import { siteConfig } from "../data/site-config";
 export function Home() {
   const featuredArticle = publishedArticles[0];
   const remainingArticles = publishedArticles.slice(1);
+  const hasArticles = publishedArticles.length > 0;
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
@@ -42,10 +43,17 @@ export function Home() {
             </p>
           </motion.div>
           
-          <ArticleCard article={featuredArticle} featured index={0} />
+          {hasArticles ? (
+            <ArticleCard article={featuredArticle} featured index={0} />
+          ) : (
+            <p className="text-lg text-ink-light">
+              No essays yet — check back soon.
+            </p>
+          )}
         </section>
         
         {/* Latest Articles */}
+        {hasArticles && (
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="mb-12 flex items-center justify-between border-b border-ink/10 pb-4">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-ink">
@@ -62,6 +70,7 @@ export function Home() {
             ))}
           </div>
         </section>
+        )}
       </main>
       
       <Footer />
