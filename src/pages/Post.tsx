@@ -158,6 +158,7 @@ export function Post() {
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary_large_image" />
         {article.status === "draft" && <meta name="robots" content="noindex" />}
+        {article.coverImage && <link rel="preload" as="image" href={article.coverImage} />}
       </Helmet>
       <Header />
 

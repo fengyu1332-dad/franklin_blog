@@ -757,6 +757,99 @@ app.delete("/api/photos/:slug", requireAuth, assertValidSlug, (req, res) => {
   res.json({ deleted: req.params.slug });
 });
 
+// ─── SEO: dynamic RSS / sitemap / robots (registered before static files so they win) ───
+
+const SITE_URL = (process.env.SITE_URL || "https://franklinhuang.com").replace(/\/+$/, "");
+const SITE_TITLE = "Notes on a Quieter Life";
+const SITE_DESC =
+  "Essays, photography, and reflections on finding meaning in the spaces between the noise.";
+
+function xmlEscape(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function toRfc822(dateStr) {
+  const d = new Date(dateStr);
+  return Number.isNaN(d.getTime()) ? new Date().toUTCString() : d.toUTCString();
+}
+
+app.get("/rss.xml", (_req, res) => {
+  const items = listArticles()
+    .slice(0, 20)
+    .map(
+      (a) => `
+    <item>
+      <title>${xmlEscape(a.title)}</title>
+      <link>${SITE_URL}/post/${encodeURIComponent(a.slug)}</link>
+      <guid>${SITE_URL}/post/${encodeURIComponent(a.slug)}</guid>
+      <pubDate>${toRfc822(a.date)}</pubDate>
+      <description>${xmlEscape(a.excerpt)}</description>
+    </item>`
+    )
+    .join("");
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${xmlEscape(SITE_TITLE)}</title>
+    <link>${SITE_URL}</link>
+    <description>${xmlEscape(SITE_DESC)}</description>
+    <language>en</language>
+    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml"/>
+    ${items}
+  </channel>
+</rss>`;
+  res.type("application/rss+xml").send(xml);
+});
+
+app.get("/sitemap.xml", (_req, res) => {
+  const staticPages = ["", "/about", "/photography", "/archive", "/lab"]
+    .map((p) => {
+      const priority = p === "" ? "1.0" : p === "/archive" ? "0.8" : "0.7";
+      return `
+  <url>
+    <loc>${SITE_URL}${p}</loc>
+    <changefreq>${p === "/archive" ? "weekly" : "monthly"}</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
+    })
+    .join("");
+
+  const articleUrls = listArticles()
+    .map(
+      (a) => `
+  <url>
+    <loc>${SITE_URL}/post/${encodeURIComponent(a.slug)}</loc>
+    <lastmod>${xmlEscape(a.date)}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`
+    )
+    .join("");
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  ${staticPages}
+  ${articleUrls}
+</urlset>`;
+  res.type("application/xml").send(xml);
+});
+
+app.get("/robots.txt", (_req, res) => {
+  const txt = `User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`;
+  res.type("text/plain").send(txt);
+});
+
 // ─── Start ───
 
 const PORT = process.env.API_PORT || 3001;

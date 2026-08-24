@@ -4,7 +4,7 @@ export const siteConfig = {
   description:
     "Curious about how things work — from circuits to ecosystems. Notes on building projects, exploring science, and discovering the world one question at a time.",
   url: "https://franklinhuang.com",
-  ogImage: "https://picsum.photos/seed/site-og/1200/630",
+  ogImage: "/uploads/og-default.jpg",
   social: {
     twitter: "https://twitter.com/franklinhuang",
     instagram: "https://instagram.com/franklin.captures",

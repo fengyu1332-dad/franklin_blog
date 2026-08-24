@@ -23,6 +23,9 @@ export function Home() {
         <meta property="og:url" content={siteConfig.url} />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
+        {featuredArticle?.coverImage && (
+          <link rel="preload" as="image" href={featuredArticle.coverImage} />
+        )}
       </Helmet>
       <Header />
       

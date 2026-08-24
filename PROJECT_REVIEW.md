@@ -185,4 +185,13 @@
 - **清理**：PhotoEditor 移除含 EXIF/GPS 的调试日志
 - 验证：tsc 零错误、build 通过（8.1s）、接口实测通过
 
-### 迭代 3~4：待开发（SEO·性能 / 工程化发布）
+### 迭代 3：SEO 与性能 ✅
+- **动态 SEO 资产**：`server.mjs` 动态生成 `/rss.xml`（最新 20 篇）、`/sitemap.xml`（静态页 + 全部文章）、`/robots.txt`（Disallow /admin + Sitemap 指向），域名取 `SITE_URL` env（默认 franklinhuang.com）；删除 public/ 下 janedoe 域名残留的静态 rss/sitemap/robots
+- **OG/favicon 本地化**：sharp 从本地照片生成 `/uploads/og-default.jpg`（1200×630，105KB）；新增 `public/favicon.svg`（品牌色）；`site-config.ogImage` 改为本地路径；index.html 补基础 meta/OG/favicon/theme-color
+- **封面 preload**：Post hero 与 Home featured 图 `<link rel="preload" as="image">`（LCP 加速）
+- **chunk 拆分**：vite `manualChunks` 拆分 markdown/motion/react-vendor/icons/exifr/vendor
+- **清理**：删除死代码 Gallery.tsx；卸载未用依赖 `@google/genai`、`rehype-raw`、`autoprefixer`（保留 playwright 供迭代 4）
+- 验收：rss/sitemap/robots 内容与文章一致（curl 实测）；**主 bundle 387KB → 7.3KB**（gzip 125KB→3KB），AudioEmbed 161KB→4KB，重块全部按需加载；Lighthouse 需浏览器环境（预留说明）
+- 已知小问题：无时区日期在 RSS pubDate 中会按本地时区偏移（影响可忽略）
+
+### 迭代 4：待开发（工程化与发布：ESLint/冒烟测试/README/部署指南）
