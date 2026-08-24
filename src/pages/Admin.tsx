@@ -157,16 +157,22 @@ export function Admin() {
 
   async function handleDelete() {
     if (!deleteTarget) return;
-    const res = await fetch(`${apiPrefix}/${deleteTarget}`, {
-      method: "DELETE",
-      headers: authHeaders(),
-    });
-    if (res.ok) {
-      setDeleteTarget(null);
-      await fetchItems();
-      toast("Deleted.", "info");
-    } else {
+    try {
+      const res = await fetch(`${apiPrefix}/${deleteTarget}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      if (res.ok) {
+        await fetchItems();
+        toast("Deleted.", "info");
+      } else {
+        toast("Delete failed.", "error");
+      }
+    } catch {
       toast("Delete failed.", "error");
+    } finally {
+      // Always close the dialog so the user is never stuck on a failed delete.
+      setDeleteTarget(null);
     }
   }
 

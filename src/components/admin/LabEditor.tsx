@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { ImageIcon, Link2, Github } from "lucide-react";
 
 export interface ProjectData {
@@ -32,9 +32,8 @@ const emptyProject: ProjectData = {
 };
 
 export function LabEditor({ initial, onSave, onCancel, isNew, allTags = [] }: LabEditorProps) {
-  const initialRef = useRef(initial);
   const [data, setData] = useState<ProjectData>(() => {
-    if (initialRef.current) return { ...emptyProject, ...initialRef.current };
+    if (initial) return { ...emptyProject, ...initial };
     return { ...emptyProject };
   });
   const [coverUploading, setCoverUploading] = useState(false);
@@ -84,7 +83,7 @@ export function LabEditor({ initial, onSave, onCancel, isNew, allTags = [] }: La
       const formData = new FormData();
       formData.append("file", file);
       try {
-        const token = sessionStorage.getItem("admin_token");
+        const token = localStorage.getItem("admin_token");
         const res = await fetch("/api/upload", {
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},

@@ -10,7 +10,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit && eslint . --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"*.{mjs,ts}\" \"eslint.config.js\"",
+    "test:e2e": "playwright test && powershell -NoProfile -Command \"Remove-Item -Path 'src/content/articles/e2e-draft-*.md' -Force -ErrorAction SilentlyContinue\""
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.19",
@@ -35,14 +37,23 @@
     "vite": "^6.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
     "@types/express": "^5.0.6",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "eslint": "^10.9.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.4",
+    "globals": "^17.11.0",
     "playwright": "^1.61.1",
+    "prettier": "^3.9.6",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
+    "typescript-eslint": "^8.67.0",
     "vite": "^6.2.0"
   }
 }

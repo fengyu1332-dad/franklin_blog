@@ -10,3 +10,5 @@ public/uploads/
 
 .vercel
 .workbuddy/
+test-results/
+playwright-report/

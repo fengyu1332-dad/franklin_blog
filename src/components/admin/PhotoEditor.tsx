@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { parse } from "exifr";
 
@@ -28,9 +28,8 @@ const emptyPhoto: PhotoData = {
 };
 
 export function PhotoEditor({ initial, onSave, onCancel, isNew }: PhotoEditorProps) {
-  const initialRef = useRef(initial);
   const [data, setData] = useState<PhotoData>(() => {
-    if (initialRef.current) return { ...emptyPhoto, ...initialRef.current };
+    if (initial) return { ...emptyPhoto, ...initial };
     return { ...emptyPhoto };
   });
   const [uploading, setUploading] = useState(false);
@@ -90,7 +89,7 @@ export function PhotoEditor({ initial, onSave, onCancel, isNew }: PhotoEditorPro
         const blob = new Blob([buffer], { type: file.type });
         const formData = new FormData();
         formData.append("file", blob, file.name);
-        const token = sessionStorage.getItem("admin_token");
+        const token = localStorage.getItem("admin_token");
         const res = await fetch("/api/upload", {
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},

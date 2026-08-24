@@ -322,7 +322,6 @@ const markdownComponents: ComponentProps<typeof ReactMarkdown>["components"] = {
   hr: () => null,
 
   blockquote({ children }) {
-    const textParts: string[] = [];
     let author = "";
 
     function extractText(nodes: unknown): string {

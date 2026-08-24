@@ -12,25 +12,27 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const TOKEN_KEY = "admin_token";
 
+// localStorage (not sessionStorage) so that opening the draft preview in a new
+// tab keeps the admin session — sessionStorage is per-tab and would 404 drafts.
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() =>
-    sessionStorage.getItem(TOKEN_KEY)
+    localStorage.getItem(TOKEN_KEY)
   );
 
   useEffect(() => {
     if (token) {
-      sessionStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(TOKEN_KEY, token);
       // Verify token is still valid on mount
       fetch("/api/auth/check", {
         headers: { Authorization: `Bearer ${token}` },
       }).then((res) => {
         if (!res.ok) {
           setToken(null);
-          sessionStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(TOKEN_KEY);
         }
       });
     } else {
-      sessionStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(TOKEN_KEY);
     }
   }, [token]);
 

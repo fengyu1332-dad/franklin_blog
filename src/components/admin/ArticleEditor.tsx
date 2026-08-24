@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ImageIcon, Video, Music, Loader2, Eye, Edit } from "lucide-react";
+import { ImageIcon, Video, Music, Eye, Edit } from "lucide-react";
 import { ImageEmbed } from "../ImageEmbed";
 import { VideoEmbed } from "../VideoEmbed";
 import { AudioEmbed } from "../AudioEmbed";
@@ -39,11 +39,11 @@ const emptyArticle: ArticleData = {
 };
 
 export function ArticleEditor({ initial, onSave, onCancel, isNew, allTags = [] }: ArticleEditorProps) {
-  // Use the initial prop directly as the starting state; don't react to prop changes
-  const initialRef = useRef(initial);
+  // Use the initial prop directly as the starting state; the lazy initializer
+  // only runs on first render, so prop changes are intentionally ignored.
   const [data, setData] = useState<ArticleData>(() => {
-    if (initialRef.current) {
-      return { ...emptyArticle, ...initialRef.current };
+    if (initial) {
+      return { ...emptyArticle, ...initial };
     }
     return { ...emptyArticle };
   });
@@ -150,7 +150,7 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew, allTags = [] }
         alert("Upload failed. Network error.");
       });
       // Include auth token for upload
-      const token = sessionStorage.getItem("admin_token");
+      const token = localStorage.getItem("admin_token");
       xhr.open("POST", "/api/upload");
       if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
       xhr.send(formData);
@@ -172,7 +172,7 @@ export function ArticleEditor({ initial, onSave, onCancel, isNew, allTags = [] }
       formData.append("file", file);
 
       try {
-        const token = sessionStorage.getItem("admin_token");
+        const token = localStorage.getItem("admin_token");
         const res = await fetch("/api/upload", {
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -542,14 +542,13 @@ const previewComponents: ComponentProps<typeof ReactMarkdown>["components"] = {
     return <ImageEmbed src={src} alt={alt ?? ""} caption={alt ?? undefined} size={(title as never) || "default"} />;
   },
   blockquote({ children }) {
-    let fullText = "";
     function extract(n: unknown): string {
       if (typeof n === "string") return n;
       if (Array.isArray(n)) return n.map(extract).join("");
       if (n && typeof n === "object" && "props" in n) return extract((n as { props?: { children?: unknown } }).props?.children);
       return "";
     }
-    fullText = extract(children);
+    const fullText = extract(children);
     const lines = fullText.split("\n").filter(Boolean);
     const last = lines[lines.length - 1]?.trim() ?? "";
     let author = "";

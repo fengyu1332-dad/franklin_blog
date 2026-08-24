@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -25,23 +24,30 @@ const TOKEN_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 const app = express();
 
-// CORS: allow same-origin and local dev origins only. Same-origin requests carry no Origin header.
-const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:3001",
-];
-app.use(
-  cors({
-    origin(origin, cb) {
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-      const err = new Error("Not allowed by CORS");
-      err.statusCode = 403;
-      cb(err);
-    },
-  })
-);
+// CORS: allow same-origin (including Vite's modulepreload requests, which always
+// send an Origin header) and any localhost/127.0.0.1 origin (dev + e2e servers).
+// Everything else is rejected with 403.
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (!origin) return next();
+  try {
+    const o = new URL(origin);
+    const sameOrigin = o.host === (req.headers.host || "");
+    const isLocal = ["localhost", "127.0.0.1", "[::1]", "::1"].includes(o.hostname);
+    if (sameOrigin || isLocal) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Vary", "Origin");
+      res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    } else {
+      return res.status(403).json({ error: "Not allowed by CORS" });
+    }
+  } catch {
+    return res.status(403).json({ error: "Not allowed by CORS" });
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 app.use(express.json());
 
 // ─── Auth helpers ───

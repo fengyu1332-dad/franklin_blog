@@ -194,4 +194,13 @@
 - 验收：rss/sitemap/robots 内容与文章一致（curl 实测）；**主 bundle 387KB → 7.3KB**（gzip 125KB→3KB），AudioEmbed 161KB→4KB，重块全部按需加载；Lighthouse 需浏览器环境（预留说明）
 - 已知小问题：无时区日期在 RSS pubDate 中会按本地时区偏移（影响可忽略）
 
-### 迭代 4：待开发（工程化与发布：ESLint/冒烟测试/README/部署指南）
+### 迭代 4：工程化与发布 ✅
+- **ESLint + Prettier**：flat config（typescript-eslint + react-hooks + react-refresh，Node globals 隔离 server.mjs/config），`npm run lint` = tsc + eslint（0 warnings）；`npm run format`；修复真实问题：3 处渲染期访问 ref（改惰性初始化）、2 处未使用变量、1 处冗余赋值；按需关闭过激规则（set-state-in-effect、only-export-components）
+- **Playwright 冒烟测试 5/5 全绿**：首页渲染、文章页（进度条/导航）、404 重定向、SEO 资产、admin 全流程（登录→建草稿→跨标签预览→删除）；输出目录移至系统 TEMP 规避同步盘/safe-delete 干扰；用系统 Edge（channel: msedge）避免浏览器下载
+- **e2e 暴露并修复真实缺陷**：① CORS 白名单按端口写死 → Vite modulepreload 的 Origin 请求被 403（生产同源也受影响）→ 重写为「同源或 localhost 任意端口放行」；② 删除失败时确认框不关闭 → `finally` 中始终关闭；③ token 存 sessionStorage → 新标签页（草稿预览）丢失会话 → 改 localStorage
+- **文档**：README 全面重写（特性/快速开始/环境变量表/脚本/内容语法/后台说明/测试）；新增 DEPLOYMENT.md（云主机+systemd+Nginx+certbot、备份策略、静态托管适配说明、上线清单、故障排查）
+- 验收：lint ✅ tsc ✅ build ✅ e2e 5/5 ✅；全新环境按 README 可 20 分钟跑通（dev + prod + 测试）
+
+## 全部迭代完成（0~4）✅
+
+开发计划五阶段全部收官。上线前剩余事项均为运维侧：设置强 ADMIN_PASSWORD、SITE_URL，备份 content/uploads，跑一遍上线清单。遗留非阻断项：uploads 中 2 个旧大图待同步盘解锁后 `node optimize-assets.mjs` 压缩；Lighthouse 建议在真实部署域名上复测。
