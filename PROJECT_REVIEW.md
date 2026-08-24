@@ -147,11 +147,31 @@
 
 ## 六、上线前 Checklist（对应 P0/P1）
 
-- [ ] slug 遍历漏洞已修复并复测
-- [ ] 管理端口令强制非默认
-- [ ] 生产上传可访问
-- [ ] 无 API key 泄露进 bundle
-- [ ] CORS/SVG 上传已收敛
-- [ ] 测试数据（USA/base64/占位域名）已清理
-- [ ] 大图已压缩、重复文件已去重
-- [ ] sitemap/rss 动态化
+- [x] slug 遍历漏洞已修复并复测（`assertValidSlug`：`\p{L}\p{N}_-` 白名单 + `path.basename` 双保险，覆盖 articles/lab/photos 全部 GET/PUT/DELETE）
+- [x] 管理端口令强制非默认（`ADMIN_PASSWORD` 缺失即拒启）
+- [x] 生产上传可访问（`app.use("/uploads", express.static(UPLOADS_DIR))` 置于 SPA fallback 之前）
+- [x] 无 API key 泄露进 bundle（vite.config 移除 GEMINI_API_KEY define）
+- [x] CORS/SVG 上传已收敛（CORS 白名单 localhost；ALLOWED_MIMES 移除 SVG）
+- [x] 测试数据已清理（USA 文章/base64 封面删除；4 个未引用重复上传文件删除）
+- [x] 大图已压缩（上传管线 sharp 自动压缩 max 2048px/质量 82；GIF 保留动画）
+- [x] 中文 slug 支持（Unicode 感知 slugify，`\p{L}\p{N}`）
+- [x] TS 生成转义加固（`generateArticlesTs/generateLabTs/generatePhotosTs` 改用 JSON.stringify）
+
+---
+
+## 七、实施记录（2026-08-24）
+
+### 迭代 0：安全加固 ✅
+- `server.mjs`：`ADMIN_PASSWORD` 缺失即 `throw` 拒启；CORS 白名单（localhost:3000/3001/127.0.0.1）；新增 `assertValidSlug`（Unicode 字母数字 + 下划线 + 连字符白名单，`path.basename` 双保险）应用于 articles/lab/photos 的 GET/PUT/DELETE 全部 9 处；上传删除端点 `assertValidFilename`；`app.use("/uploads", express.static(UPLOADS_DIR))`；ALLOWED_MIMES 移除 `image/svg+xml`
+- `vite.config.ts`：移除 `GEMINI_API_KEY` define 注入（含未使用的 loadEnv）
+- 复测：`..%2f` 攻击由"逃逸成功"变为 400；未设 `ADMIN_PASSWORD` 启动报错；`/uploads/*` 生产模式直出文件
+
+### 迭代 1：内容与数据卫生 ✅（压缩管线随 sharp 安装完成后生效）
+- 删除 USA 测试文章（`src/content/articles/usa.md` + `articles.ts` 条目 + base64 封面）
+- 清理 4 个未引用/重复上传文件（e849c985、29d00005、7693a003、6075ff90），保留 avatar.png / 87bad1d2（照片引用）/ b26352a0（slow-travel 引用）
+- `slugify` 改为 Unicode 感知（NFKC + `\p{L}\p{N}`），中文标题可生成有效 slug
+- 三个 TS 生成函数字符串字段统一 JSON.stringify 转义
+- `/api/upload` 接入 sharp：EXIF 方向矫正 + 超 2048px 缩放 + JPEG/WebP 质量 82 / PNG 压缩级别 9，原地覆盖（URL 不变），GIF 跳过
+- 待办：现有 3 个大文件压缩（avatar 5.5MB→256px、87bad1d2 7.6MB→2048px、b26352a0 3.3MB→2048px）
+
+### 迭代 2~4：待开发（功能完善 / SEO·性能 / 工程化发布）

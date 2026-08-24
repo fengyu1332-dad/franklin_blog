@@ -6,18 +6,42 @@ import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import multer from "multer";
+import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ARTICLES_DIR = path.join(__dirname, "src", "content", "articles");
 const ARTICLES_TS = path.join(__dirname, "src", "data", "articles.ts");
 const UPLOADS_DIR = path.join(__dirname, "public", "uploads");
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+if (!ADMIN_PASSWORD) {
+  throw new Error(
+    "ADMIN_PASSWORD environment variable is required. " +
+    "Set a strong password before starting the server (e.g. ADMIN_PASSWORD=yourpassword node server.mjs)."
+  );
+}
 const TOKEN_SECRET = crypto.randomBytes(32).toString("hex");
 const TOKEN_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 const app = express();
-app.use(cors());
+
+// CORS: allow same-origin and local dev origins only. Same-origin requests carry no Origin header.
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+];
+app.use(
+  cors({
+    origin(origin, cb) {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      const err = new Error("Not allowed by CORS");
+      err.statusCode = 403;
+      cb(err);
+    },
+  })
+);
 app.use(express.json());
 
 // ─── Auth helpers ───
@@ -75,8 +99,47 @@ app.get("/api/auth/check", requireAuth, (_req, res) => {
 
 // ─── File Upload ───
 
-const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml", "video/mp4", "video/webm", "audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg"];
+const ALLOWED_MIMES = ["image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/webm", "audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg"];
 const BLOCKED_EXTENSIONS = [".js", ".html", ".php", ".exe", ".sh", ".bat", ".cmd", ".ps1", ".dll", ".wasm"];
+const IMAGE_MAX_DIMENSION = 2048; // max width/height for uploaded raster images
+const IMAGE_QUALITY = 82;
+const UPLOAD_COMPRESS_RETRIES = 6; // BaiduSyncdisk-style sync clients briefly lock new files
+const UPLOAD_COMPRESS_RETRY_DELAY_MS = 500;
+
+/** Compress an uploaded raster image in place. The file is read into memory first
+ *  (bypassing libvips' direct open, which cloud-sync clients can block), then
+ *  compressed and written back over the same path so the URL stays unchanged. */
+async function compressUploadedImage(filePath) {
+  let lastErr;
+  for (let attempt = 0; attempt < UPLOAD_COMPRESS_RETRIES; attempt++) {
+    try {
+      const ext = path.extname(filePath).toLowerCase();
+      const buf = fs.readFileSync(filePath);
+      const image = sharp(buf).rotate(); // auto-correct EXIF orientation
+      const meta = await image.metadata();
+      let pipeline = image;
+      if ((meta.width ?? 0) > IMAGE_MAX_DIMENSION || (meta.height ?? 0) > IMAGE_MAX_DIMENSION) {
+        pipeline = pipeline.resize({
+          width: IMAGE_MAX_DIMENSION,
+          height: IMAGE_MAX_DIMENSION,
+          fit: "inside",
+          withoutEnlargement: true,
+        });
+      }
+      const format = ext === ".png" ? "png" : ext === ".webp" ? "webp" : "jpeg";
+      const opts = format === "png" ? { compressionLevel: 9 } : { quality: IMAGE_QUALITY };
+      const output = await pipeline.toFormat(format, opts).toBuffer();
+      fs.writeFileSync(filePath, output); // overwrite in place, URL unchanged
+      return output.length;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < UPLOAD_COMPRESS_RETRIES - 1) {
+        await new Promise((r) => setTimeout(r, UPLOAD_COMPRESS_RETRY_DELAY_MS * (attempt + 1)));
+      }
+    }
+  }
+  throw lastErr;
+}
 
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
@@ -104,21 +167,63 @@ const upload = multer({
   },
 });
 
-app.post("/api/upload", requireAuth, upload.single("file"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  const url = `/uploads/${req.file.filename}`;
-  res.json({ url, filename: req.file.filename, size: req.file.size });
+app.post("/api/upload", requireAuth, upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+    let finalSize = req.file.size;
+    const ext = path.extname(req.file.filename).toLowerCase();
+
+    // Compress raster images in place (URL unchanged). Skip GIF to preserve animation.
+    if (req.file.mimetype.startsWith("image/") && ext !== ".gif") {
+      try {
+        finalSize = await compressUploadedImage(req.file.path);
+        console.log(`[upload] compressed ${req.file.originalname}: ${req.file.size} -> ${finalSize} bytes`);
+      } catch (compressErr) {
+        // Keep the original file if compression fails (e.g. malformed image)
+        console.warn("[upload] image compression skipped:", compressErr.message);
+      }
+    }
+
+    const url = `/uploads/${req.file.filename}`;
+    res.json({ url, filename: req.file.filename, size: finalSize });
+  } catch (err) {
+    console.error("[upload] failed:", err);
+    res.status(500).json({ error: "Upload failed" });
+  }
 });
 
 // ─── Helpers ───
 
+/** Unicode-aware slug. Keeps letters/numbers from any language (e.g. Chinese titles). */
 function slugify(text) {
   return text
+    .normalize("NFKC")
     .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
     .trim();
+}
+
+/** Slug whitelist: unicode letters/numbers, dash, underscore. Blocks path traversal. */
+const SLUG_RE = /^[\p{L}\p{N}_-]+$/u;
+
+function assertValidSlug(req, res, next) {
+  const slug = req.params.slug;
+  if (!slug || !SLUG_RE.test(slug) || path.basename(slug) !== slug) {
+    return res.status(400).json({ error: "Invalid slug" });
+  }
+  next();
+}
+
+function assertValidFilename(req, res, next) {
+  const filename = req.params.filename;
+  if (!filename || path.basename(filename) !== filename || filename.includes("..")) {
+    return res.status(400).json({ error: "Invalid filename" });
+  }
+  next();
 }
 
 function listArticles({ includeDrafts = false } = {}) {
@@ -159,17 +264,17 @@ function generateArticlesTs(articles) {
   const items = articles
     .map(
       (a) => `  {
-    id: "${a.id}",
-    slug: "${a.slug}",
-    title: "${a.title.replace(/"/g, '\\"')}",
-    excerpt: "${a.excerpt.replace(/"/g, '\\"')}",
-    coverImage: "${a.coverImage}",
-    date: "${a.date}",
-    readTime: "${a.readTime}",
+    id: ${JSON.stringify(a.id)},
+    slug: ${JSON.stringify(a.slug)},
+    title: ${JSON.stringify(a.title)},
+    excerpt: ${JSON.stringify(a.excerpt)},
+    coverImage: ${JSON.stringify(a.coverImage)},
+    date: ${JSON.stringify(a.date)},
+    readTime: ${JSON.stringify(a.readTime)},
     author: defaultAuthor,
-    tags: [${a.tags.map((t) => `"${t}"`).join(", ")}],
-    status: "${a.status || "published"}",
-    contentFile: "${a.contentFile}",
+    tags: [${a.tags.map((t) => JSON.stringify(t)).join(", ")}],
+    status: ${JSON.stringify(a.status || "published")},
+    contentFile: ${JSON.stringify(a.contentFile)},
   }`
     )
     .join(",\n");
@@ -221,7 +326,7 @@ app.get("/api/articles", (req, res) => {
 });
 
 // Get single article — allows draft access if authed
-app.get("/api/articles/:slug", (req, res) => {
+app.get("/api/articles/:slug", assertValidSlug, (req, res) => {
   const filePath = path.join(ARTICLES_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
   const raw = fs.readFileSync(filePath, "utf8");
@@ -259,9 +364,8 @@ app.get("/api/uploads", requireAuth, (_req, res) => {
 });
 
 // Delete uploaded file
-app.delete("/api/uploads/:filename", requireAuth, (req, res) => {
+app.delete("/api/uploads/:filename", requireAuth, assertValidFilename, (req, res) => {
   const filePath = path.join(UPLOADS_DIR, req.params.filename);
-  if (!filePath.startsWith(UPLOADS_DIR)) return res.status(400).json({ error: "Invalid path" });
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
   fs.unlinkSync(filePath);
   res.json({ deleted: req.params.filename });
@@ -293,7 +397,7 @@ app.post("/api/articles", requireAuth, (req, res) => {
 });
 
 // Update article
-app.put("/api/articles/:slug", requireAuth, (req, res) => {
+app.put("/api/articles/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(ARTICLES_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
 
@@ -321,7 +425,7 @@ app.put("/api/articles/:slug", requireAuth, (req, res) => {
 });
 
 // Delete article
-app.delete("/api/articles/:slug", requireAuth, (req, res) => {
+app.delete("/api/articles/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(ARTICLES_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
 
@@ -368,16 +472,16 @@ function generateLabTs(projects) {
   const items = projects
     .map(
       (p) => `  {
-    id: "${p.id}",
-    slug: "${p.slug}",
-    title: "${p.title.replace(/"/g, '\\"')}",
-    description: "${p.description.replace(/"/g, '\\"')}",
-    image: "${p.image}",
-    date: "${p.date || ""}",
-    tags: [${p.tags.map((t) => `"${t}"`).join(", ")}],
-    url: "${p.url}",
-    source: "${p.source}",
-    status: "${p.status || "draft"}",
+    id: ${JSON.stringify(p.id)},
+    slug: ${JSON.stringify(p.slug)},
+    title: ${JSON.stringify(p.title)},
+    description: ${JSON.stringify(p.description)},
+    image: ${JSON.stringify(p.image)},
+    date: ${JSON.stringify(p.date || "")},
+    tags: [${p.tags.map((t) => JSON.stringify(t)).join(", ")}],
+    url: ${JSON.stringify(p.url)},
+    source: ${JSON.stringify(p.source)},
+    status: ${JSON.stringify(p.status || "draft")},
   }`
     )
     .join(",\n");
@@ -412,7 +516,7 @@ app.get("/api/lab", (req, res) => {
   res.json(listLabProjects({ includeDrafts: authed }));
 });
 
-app.get("/api/lab/:slug", (req, res) => {
+app.get("/api/lab/:slug", assertValidSlug, (req, res) => {
   const filePath = path.join(LAB_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
   const raw = fs.readFileSync(filePath, "utf8");
@@ -453,7 +557,7 @@ app.post("/api/lab", requireAuth, (req, res) => {
   res.status(201).json({ slug, filename });
 });
 
-app.put("/api/lab/:slug", requireAuth, (req, res) => {
+app.put("/api/lab/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(LAB_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
 
@@ -481,7 +585,7 @@ app.put("/api/lab/:slug", requireAuth, (req, res) => {
   res.json({ slug: req.params.slug });
 });
 
-app.delete("/api/lab/:slug", requireAuth, (req, res) => {
+app.delete("/api/lab/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(LAB_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
   fs.unlinkSync(filePath);
@@ -525,14 +629,14 @@ function generatePhotosTs(photos) {
   const items = photos
     .map(
       (p) => `  {
-    id: "${p.id}",
-    slug: "${p.slug}",
-    src: "${p.src}",
-    alt: "${p.alt.replace(/"/g, '\\"')}",
-    caption: "${p.caption.replace(/"/g, '\\"')}",
+    id: ${JSON.stringify(p.id)},
+    slug: ${JSON.stringify(p.slug)},
+    src: ${JSON.stringify(p.src)},
+    alt: ${JSON.stringify(p.alt)},
+    caption: ${JSON.stringify(p.caption)},
     width: ${p.width},
     height: ${p.height},
-    status: "${p.status || "draft"}",
+    status: ${JSON.stringify(p.status || "draft")},
   }`
     )
     .join(",\n");
@@ -565,7 +669,7 @@ app.get("/api/photos", (req, res) => {
   res.json(listPhotos({ includeDrafts: authed }));
 });
 
-app.get("/api/photos/:slug", (req, res) => {
+app.get("/api/photos/:slug", assertValidSlug, (req, res) => {
   const filePath = path.join(PHOTOS_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
   const raw = fs.readFileSync(filePath, "utf8");
@@ -604,7 +708,7 @@ app.post("/api/photos", requireAuth, (req, res) => {
   res.status(201).json({ slug, filename });
 });
 
-app.put("/api/photos/:slug", requireAuth, (req, res) => {
+app.put("/api/photos/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(PHOTOS_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
 
@@ -630,7 +734,7 @@ app.put("/api/photos/:slug", requireAuth, (req, res) => {
   res.json({ slug: req.params.slug });
 });
 
-app.delete("/api/photos/:slug", requireAuth, (req, res) => {
+app.delete("/api/photos/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(PHOTOS_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
   fs.unlinkSync(filePath);
@@ -644,6 +748,10 @@ app.delete("/api/photos/:slug", requireAuth, (req, res) => {
 // ─── Start ───
 
 const PORT = process.env.API_PORT || 3001;
+
+// Serve runtime-uploaded files directly (works in both dev and production).
+// Must be registered before the SPA fallback so /uploads/* is never swallowed by index.html.
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 // In production, serve built static files
 const distPath = path.join(__dirname, "dist");
