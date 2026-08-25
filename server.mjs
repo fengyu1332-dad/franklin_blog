@@ -232,6 +232,20 @@ function assertValidFilename(req, res, next) {
   next();
 }
 
+/** Best-effort unlink. Some environments (e.g. BaiduSyncdisk + safe-delete
+ *  shims) report a trash failure even when the file ends up removed. If the
+ *  file is already gone, treat the delete as successful so the registry
+ *  (articles/lab/photos .ts) stays in sync with the content directory. */
+function safeUnlink(filePath) {
+  try {
+    fs.unlinkSync(filePath);
+    return true;
+  } catch (err) {
+    if (!fs.existsSync(filePath)) return true;
+    throw err;
+  }
+}
+
 function listArticles({ includeDrafts = false } = {}) {
   if (!fs.existsSync(ARTICLES_DIR)) return [];
   const all = fs
@@ -376,7 +390,7 @@ app.get("/api/uploads", requireAuth, (_req, res) => {
 app.delete("/api/uploads/:filename", requireAuth, assertValidFilename, (req, res) => {
   const filePath = path.join(UPLOADS_DIR, req.params.filename);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
-  fs.unlinkSync(filePath);
+  safeUnlink(filePath);
   res.json({ deleted: req.params.filename });
 });
 
@@ -438,7 +452,7 @@ app.delete("/api/articles/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(ARTICLES_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
 
-  fs.unlinkSync(filePath);
+  safeUnlink(filePath);
 
   const articles = listArticles();
   generateArticlesTs(articles);
@@ -597,7 +611,7 @@ app.put("/api/lab/:slug", requireAuth, assertValidSlug, (req, res) => {
 app.delete("/api/lab/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(LAB_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
-  fs.unlinkSync(filePath);
+  safeUnlink(filePath);
 
   const projects = listLabProjects({ includeDrafts: true });
   generateLabTs(projects);
@@ -758,7 +772,7 @@ app.put("/api/photos/:slug", requireAuth, assertValidSlug, (req, res) => {
 app.delete("/api/photos/:slug", requireAuth, assertValidSlug, (req, res) => {
   const filePath = path.join(PHOTOS_DIR, `${req.params.slug}.md`);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: "Not found" });
-  fs.unlinkSync(filePath);
+  safeUnlink(filePath);
 
   const photos = listPhotos({ includeDrafts: true });
   generatePhotosTs(photos);
