@@ -172,7 +172,7 @@ export function PhotoEditor({ initial, onSave, onCancel, isNew }: PhotoEditorPro
               value={data.src}
               onChange={(e) => update("src", e.target.value)}
               className="w-full border border-ink/10 rounded-sm px-3 py-2.5 text-sm bg-transparent focus:border-accent focus:outline-none transition-colors"
-              placeholder="https://... or upload /uploads/..."
+              placeholder="https://... or upload /media/..."
             />
             {data.src && (
               <div className="overflow-hidden rounded-sm border border-ink/10 bg-ink/5">

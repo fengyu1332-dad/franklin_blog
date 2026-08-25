@@ -10,7 +10,7 @@ import sharp from "sharp";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ARTICLES_DIR = path.join(__dirname, "src", "content", "articles");
 const ARTICLES_TS = path.join(__dirname, "src", "data", "articles.ts");
-const UPLOADS_DIR = path.join(__dirname, "public", "uploads");
+const UPLOADS_DIR = path.join(__dirname, "public", "media");
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 if (!ADMIN_PASSWORD) {
@@ -191,7 +191,7 @@ app.post("/api/upload", requireAuth, upload.single("file"), async (req, res) => 
       }
     }
 
-    const url = `/uploads/${req.file.filename}`;
+    const url = `/media/${req.file.filename}`;
     res.json({ url, filename: req.file.filename, size: finalSize });
   } catch (err) {
     console.error("[upload] failed:", err);
@@ -418,7 +418,7 @@ app.get("/api/uploads", requireAuth, (_req, res) => {
   if (!fs.existsSync(UPLOADS_DIR)) return res.json([]);
   const files = fs.readdirSync(UPLOADS_DIR).map((name) => ({
     name,
-    url: `/uploads/${name}`,
+    url: `/media/${name}`,
     size: fs.statSync(path.join(UPLOADS_DIR, name)).size,
   }));
   res.json(files);
@@ -680,7 +680,7 @@ function listPhotos({ includeDrafts = false } = {}) {
       const src = data.src ?? "";
       // Report real file size for locally-hosted uploads
       let size = null;
-      if (typeof src === "string" && src.startsWith("/uploads/")) {
+      if (typeof src === "string" && src.startsWith("/media/")) {
         try {
           const localFile = path.join(UPLOADS_DIR, path.basename(src));
           if (fs.existsSync(localFile)) size = fs.statSync(localFile).size;
@@ -924,8 +924,8 @@ Sitemap: ${SITE_URL}/sitemap.xml
 const PORT = process.env.API_PORT || 3001;
 
 // Serve runtime-uploaded files directly (works in both dev and production).
-// Must be registered before the SPA fallback so /uploads/* is never swallowed by index.html.
-app.use("/uploads", express.static(UPLOADS_DIR));
+// Must be registered before the SPA fallback so /media/* is never swallowed by index.html.
+app.use("/media", express.static(UPLOADS_DIR));
 
 // In production, serve built static files
 const distPath = path.join(__dirname, "dist");

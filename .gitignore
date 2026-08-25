@@ -6,7 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
-public/uploads/
+# public/media/ is git-tracked so uploaded images survive deployments.
+# Only large/transient generated files are ignored below if needed.
 
 .vercel
 .workbuddy/

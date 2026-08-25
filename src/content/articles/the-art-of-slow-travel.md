@@ -39,7 +39,7 @@ On a recent trip to Kyoto, I decided to try something radical: I threw away my i
 ![image-embed](https://picsum.photos/seed/kyoto-garden/1200/800 "A quiet corner of Ryoanji temple garden" wide)
 
 What I discovered was that the city revealed itself in ways no guidebook could have predicted. A conversation with an elderly shopkeeper who insisted on showing me his collection of vintage cameras. The smell of roasting tea leaves drifting from an unmarked doorway. The way cherry blossoms sound when the wind passes through them — a soft whisper, like pages turning.
-![d26c2031-b403-4718-8d92-d7d54bceca0f.jpg](/uploads/b26352a0-df78-4a72-a339-0f697823c50b.jpg "wide")
+![d26c2031-b403-4718-8d92-d7d54bceca0f.jpg](/media/b26352a0-df78-4a72-a339-0f697823c50b.jpg "wide")
 
 ## The Gift of Boredom
 

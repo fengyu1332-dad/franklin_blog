@@ -13,7 +13,7 @@ export const photos: Photo[] = [
   {
     id: "vastness",
     slug: "vastness",
-    src: "/uploads/e024adf3-ea21-407b-bd73-f1cc5e1d2e7a.png",
+    src: "/media/e024adf3-ea21-407b-bd73-f1cc5e1d2e7a.png",
     alt: "Paradise in heaven, Su‑Hang on earth",
     caption: "Xihu，HangZhou，China，2023",
     width: 1195,
@@ -23,7 +23,7 @@ export const photos: Photo[] = [
   {
     id: "tokyo-2023",
     slug: "tokyo-2023",
-    src: "/uploads/cc2234a7-6e7a-4b7e-9d8a-863124e556cf.jpeg",
+    src: "/media/cc2234a7-6e7a-4b7e-9d8a-863124e556cf.jpeg",
     alt: "Chinese‑style beauty",
     caption: "Zhejiang，China，2023",
     width: 2048,
@@ -33,7 +33,7 @@ export const photos: Photo[] = [
   {
     id: "swiss-alps",
     slug: "swiss-alps",
-    src: "/uploads/ff66a2d8-cc45-4e4f-8950-78500bb64217.png",
+    src: "/media/ff66a2d8-cc45-4e4f-8950-78500bb64217.png",
     alt: "the integration of Buddhism and Chinese‑style aesthetics",
     caption: "Zhejiang，China, 2023",
     width: 842,
@@ -133,7 +133,7 @@ export const photos: Photo[] = [
   {
     id: "2021-the-maijishan-grottoes",
     slug: "2021-the-maijishan-grottoes",
-    src: "/uploads/87bad1d2-928b-450e-9b48-c5ea37fc9c19.jpg",
+    src: "/media/87bad1d2-928b-450e-9b48-c5ea37fc9c19.jpg",
     alt: "Got to check out the Maijishan Grottoes today, can't believe people built these amazing caves and walkways on a steep cliff so long ago. Hiked all the way up, the view and the ancient carvings are so worth every step of the climb.",
     caption: "2021 the Maijishan Grottoes",
     width: 4752,

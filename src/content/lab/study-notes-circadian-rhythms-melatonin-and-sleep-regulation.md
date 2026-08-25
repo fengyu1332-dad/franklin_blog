@@ -213,7 +213,7 @@ description: >-
   292]. Depressed patients exhibit blunted PIPR (light hyposensitivity) [311]
   and restricted environmental light exposure regardless of the season, locking
   them into a state of chronic circadian desynchronization [291].
-image: /uploads/b478a9be-430c-4cd1-8ac9-44dd8c086c58.png
+image: /media/b478a9be-430c-4cd1-8ac9-44dd8c086c58.png
 date: '2027-07-25'
 tags:
   - Melatonin
