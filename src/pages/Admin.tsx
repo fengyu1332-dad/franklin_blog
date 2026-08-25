@@ -97,17 +97,22 @@ export function Admin() {
     if (contentType === "photos") {
       const d = data as PhotoData;
       const isNew = editing === "new";
-      const res = await fetch(isNew ? apiPrefix : `${apiPrefix}/${editing}`, {
-        method: isNew ? "POST" : "PUT",
-        headers,
-        body: JSON.stringify(d),
-      });
-      if (res.ok) {
-        setEditing(null);
-        await fetchItems();
-        toast(isNew ? "Photo added." : "Photo updated.", "success");
-      } else {
-        toast("Save failed.", "error");
+      try {
+        const res = await fetch(isNew ? apiPrefix : `${apiPrefix}/${editing}`, {
+          method: isNew ? "POST" : "PUT",
+          headers,
+          body: JSON.stringify(d),
+        });
+        if (res.ok) {
+          setEditing(null);
+          await fetchItems();
+          toast(isNew ? "Photo added." : "Photo updated.", "success");
+        } else {
+          const err = await res.json().catch(() => ({}));
+          toast(err.error ?? `Save failed (HTTP ${res.status}).`, "error");
+        }
+      } catch (e) {
+        toast("Save failed — cannot reach the local server. Is it running?", "error");
       }
       return;
     }
@@ -117,19 +122,23 @@ export function Admin() {
       const tags = d.tags.split(",").map((t) => t.trim()).filter(Boolean);
       const body = { ...d, tags };
       const isNew = editing === "new";
-      const res = await fetch(isNew ? apiPrefix : `${apiPrefix}/${editing}`, {
-        method: isNew ? "POST" : "PUT",
-        headers,
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        setEditing(null);
-        await fetchItems();
-        await fetchTags();
-        toast(isNew ? "Project created." : "Project updated.", "success");
-      } else {
-        const err = await res.json().catch(() => ({}));
-        toast(err.error ?? "Save failed.", "error");
+      try {
+        const res = await fetch(isNew ? apiPrefix : `${apiPrefix}/${editing}`, {
+          method: isNew ? "POST" : "PUT",
+          headers,
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          setEditing(null);
+          await fetchItems();
+          await fetchTags();
+          toast(isNew ? "Project created." : "Project updated.", "success");
+        } else {
+          const err = await res.json().catch(() => ({}));
+          toast(err.error ?? `Save failed (HTTP ${res.status}).`, "error");
+        }
+      } catch (e) {
+        toast("Save failed — cannot reach the local server. Is it running?", "error");
       }
       return;
     }
@@ -139,19 +148,23 @@ export function Admin() {
     const tags = d.tags.split(",").map((t) => t.trim()).filter(Boolean);
     const body = { ...d, tags };
     const isNew = editing === "new";
-    const res = await fetch(isNew ? apiPrefix : `${apiPrefix}/${editing}`, {
-      method: isNew ? "POST" : "PUT",
-      headers,
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
-      setEditing(null);
-      await fetchItems();
-      await fetchTags();
-      toast(isNew ? "Article created." : "Article updated.", "success");
-    } else {
-      const err = await res.json().catch(() => ({}));
-      toast(err.error ?? "Save failed.", "error");
+    try {
+      const res = await fetch(isNew ? apiPrefix : `${apiPrefix}/${editing}`, {
+        method: isNew ? "POST" : "PUT",
+        headers,
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        setEditing(null);
+        await fetchItems();
+        await fetchTags();
+        toast(isNew ? "Article created." : "Article updated.", "success");
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast(err.error ?? `Save failed (HTTP ${res.status}).`, "error");
+      }
+    } catch (e) {
+      toast("Save failed — cannot reach the local server. Is it running?", "error");
     }
   }
 
