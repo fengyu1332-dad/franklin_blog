@@ -12,7 +12,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit && eslint . --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"*.{mjs,ts}\" \"eslint.config.js\"",
-    "test:e2e": "playwright test && powershell -NoProfile -Command \"Remove-Item -Path 'src/content/articles/e2e-draft-*.md' -Force -ErrorAction SilentlyContinue\""
+    "test:e2e": "playwright test && powershell -NoProfile -Command \"Remove-Item -Path 'src/content/articles/e2e-draft-*.md' -Force -ErrorAction SilentlyContinue\"",
+    "publish": "node publish.mjs"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.19",
