@@ -1,8 +1,9 @@
 ---
-src: https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=800&h=1200&fit=crop
-alt: Urban landscape
-caption: Tokyo, 2023
-width: 800
-height: 1200
+src: /uploads/cc2234a7-6e7a-4b7e-9d8a-863124e556cf.jpeg
+alt: Chinese‑style beauty
+caption: Zhejiang，China，2023
+width: 2048
+height: 953
 status: published
 ---
+

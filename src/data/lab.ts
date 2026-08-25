@@ -22,7 +22,7 @@ export const projects: Project[] = [
     tags: ["Melatonin", "Circadian Rhythms", "Sleep Regulation", "Wavelength Blue Light"],
     url: "",
     source: "",
-    status: "draft",
+    status: "published",
   },
   {
     id: "daily-photo-api",
