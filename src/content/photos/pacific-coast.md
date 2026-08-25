@@ -1,8 +1,9 @@
 ---
-src: https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=1600&h=900&fit=crop
-alt: Ocean waves
-caption: Pacific coast
-width: 1600
-height: 900
+src: /media/250bb48a-2d6b-4c73-b708-e9eeb915430e.png
+alt: 'Beneath the dusk, we behold the serenity of sea and sky.'
+caption: Canada，2022
+width: 1376
+height: 768
 status: published
 ---
+
