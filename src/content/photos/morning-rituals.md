@@ -1,8 +1,9 @@
 ---
-src: https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=800&h=800&fit=crop
-alt: Coffee shop
-caption: Morning rituals
-width: 800
-height: 800
+src: /media/22e806dc-2246-4194-b483-46a4b51234bc.jpg
+alt: Painterly Oil‑painting‑style Colours
+caption: Canada，2022
+width: 1365
+height: 2048
 status: published
 ---
+
