@@ -246,6 +246,44 @@ function safeUnlink(filePath) {
   }
 }
 
+/** Write a file with retry. BaiduSyncdisk briefly locks newly written files
+ *  (EPERM/EBUSY); a few retries with backoff make the write reliable. */
+const WRITE_RETRIES = 6;
+const WRITE_RETRY_DELAY_MS = 500;
+
+function writeFileWithRetry(filePath, content) {
+  let lastErr;
+  for (let attempt = 0; attempt < WRITE_RETRIES; attempt++) {
+    try {
+      fs.writeFileSync(filePath, content, "utf8");
+      return;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < WRITE_RETRIES - 1) {
+        const wait = WRITE_RETRY_DELAY_MS * (attempt + 1);
+        const buf = new Int32Array(new SharedArrayBuffer(4));
+        Atomics.wait(buf, 0, 0, wait);
+      }
+    }
+  }
+  throw lastErr;
+}
+
+/** Guard used by create routes: if the registry regeneration fails after the
+ *  md was written, roll the md back so a retry doesn't hit a 409 slug clash. */
+function rollbackIfFailed(filePath, fn) {
+  try {
+    fn();
+  } catch (err) {
+    try {
+      safeUnlink(filePath);
+    } catch {
+      /* keep original error */
+    }
+    throw err;
+  }
+}
+
 function listArticles({ includeDrafts = false } = {}) {
   if (!fs.existsSync(ARTICLES_DIR)) return [];
   const all = fs
@@ -334,7 +372,7 @@ ${items}
 /** Published articles only — for public-facing pages */
 export const publishedArticles: Article[] = articles.filter(a => a.status !== "draft");
 `;
-  fs.writeFileSync(ARTICLES_TS, ts, "utf8");
+  writeFileWithRetry(ARTICLES_TS, ts);
 }
 
 // ─── API Routes ───
@@ -411,10 +449,14 @@ app.post("/api/articles", requireAuth, (req, res) => {
   const md = matter.stringify(content ?? "", frontmatter);
 
   if (!fs.existsSync(ARTICLES_DIR)) fs.mkdirSync(ARTICLES_DIR, { recursive: true });
-  fs.writeFileSync(filePath, md, "utf8");
+  writeFileWithRetry(filePath, md);
 
-  const articles = listArticles();
-  generateArticlesTs(articles);
+  // If registry regeneration fails (e.g. BaiduSyncdisk lock), roll the md
+  // back so a retry doesn't hit a 409 slug clash.
+  rollbackIfFailed(filePath, () => {
+    const articles = listArticles();
+    generateArticlesTs(articles);
+  });
 
   res.status(201).json({ slug, filename });
 });
@@ -439,7 +481,7 @@ app.put("/api/articles/:slug", requireAuth, assertValidSlug, (req, res) => {
   };
 
   const md = matter.stringify(content ?? existing.content, frontmatter);
-  fs.writeFileSync(filePath, md, "utf8");
+  writeFileWithRetry(filePath, md);
 
   const articles = listArticles();
   generateArticlesTs(articles);
@@ -528,7 +570,7 @@ ${items}
 
 export const publishedProjects: Project[] = projects.filter(p => p.status !== "draft");
 `;
-  fs.writeFileSync(LAB_TS, ts, "utf8");
+  writeFileWithRetry(LAB_TS, ts);
 }
 
 app.get("/api/lab", (req, res) => {
@@ -572,10 +614,12 @@ app.post("/api/lab", requireAuth, (req, res) => {
   const md = matter.stringify("", frontmatter);
 
   if (!fs.existsSync(LAB_DIR)) fs.mkdirSync(LAB_DIR, { recursive: true });
-  fs.writeFileSync(filePath, md, "utf8");
+  writeFileWithRetry(filePath, md);
 
-  const projects = listLabProjects({ includeDrafts: true });
-  generateLabTs(projects);
+  rollbackIfFailed(filePath, () => {
+    const projects = listLabProjects({ includeDrafts: true });
+    generateLabTs(projects);
+  });
 
   res.status(201).json({ slug, filename });
 });
@@ -600,7 +644,7 @@ app.put("/api/lab/:slug", requireAuth, assertValidSlug, (req, res) => {
   };
 
   const md = matter.stringify("", frontmatter);
-  fs.writeFileSync(filePath, md, "utf8");
+  writeFileWithRetry(filePath, md);
 
   const projects = listLabProjects({ includeDrafts: true });
   generateLabTs(projects);
@@ -693,7 +737,7 @@ ${items}
 
 export const publishedPhotos: Photo[] = photos.filter(p => p.status !== "draft");
 `;
-  fs.writeFileSync(PHOTOS_TS, ts, "utf8");
+  writeFileWithRetry(PHOTOS_TS, ts);
 }
 
 app.get("/api/photos", (req, res) => {
@@ -735,10 +779,12 @@ app.post("/api/photos", requireAuth, (req, res) => {
   const md = matter.stringify("", frontmatter);
 
   if (!fs.existsSync(PHOTOS_DIR)) fs.mkdirSync(PHOTOS_DIR, { recursive: true });
-  fs.writeFileSync(filePath, md, "utf8");
+  writeFileWithRetry(filePath, md);
 
-  const photos = listPhotos({ includeDrafts: true });
-  generatePhotosTs(photos);
+  rollbackIfFailed(filePath, () => {
+    const photos = listPhotos({ includeDrafts: true });
+    generatePhotosTs(photos);
+  });
 
   res.status(201).json({ slug, filename });
 });
@@ -761,7 +807,7 @@ app.put("/api/photos/:slug", requireAuth, assertValidSlug, (req, res) => {
   };
 
   const md = matter.stringify("", frontmatter);
-  fs.writeFileSync(filePath, md, "utf8");
+  writeFileWithRetry(filePath, md);
 
   const photos = listPhotos({ includeDrafts: true });
   generatePhotosTs(photos);
