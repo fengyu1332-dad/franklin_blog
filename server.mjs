@@ -251,6 +251,9 @@ function listArticles({ includeDrafts = false } = {}) {
         readTime: data.readTime ?? "",
         tags: data.tags ?? [],
         status: data.status ?? "published",
+        // Optional per-article author override from frontmatter. Falls back
+        // to defaultAuthor at generation time when null/missing.
+        author: data.author ?? null,
         contentFile: filename,
       };
     })
@@ -277,7 +280,7 @@ function generateArticlesTs(articles) {
     coverImage: ${JSON.stringify(a.coverImage)},
     date: ${JSON.stringify(a.date)},
     readTime: ${JSON.stringify(a.readTime)},
-    author: defaultAuthor,
+    author: ${a.author ? JSON.stringify(a.author) : 'defaultAuthor'},
     tags: [${a.tags.map((t) => JSON.stringify(t)).join(", ")}],
     status: ${JSON.stringify(a.status || "published")},
     contentFile: ${JSON.stringify(a.contentFile)},

@@ -38,7 +38,7 @@ export const articles: Article[] = [
     coverImage: "https://picsum.photos/seed/slowtravel/1600/900",
     date: "October 12, 2023",
     readTime: "8 min read",
-    author: defaultAuthor,
+    author: {"name":"Franklin HUANG","avatar":"/avatar-portrait.png","bio":"A high school student captivated by engineering, physics, and the natural world. Building things, asking why, and learning out loud.","twitter":"@franklinhuang","instagram":"@franklin.captures"},
     tags: ["Travel", "Mindfulness", "Photography"],
     status: "published",
     contentFile: "the-art-of-slow-travel.md",

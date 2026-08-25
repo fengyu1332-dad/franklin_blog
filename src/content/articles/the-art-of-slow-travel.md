@@ -10,6 +10,12 @@ tags:
   - Travel
   - Mindfulness
   - Photography
+author:
+  name: 'Franklin HUANG'
+  avatar: '/avatar-portrait.png'
+  bio: 'A high school student captivated by engineering, physics, and the natural world. Building things, asking why, and learning out loud.'
+  twitter: '@franklinhuang'
+  instagram: '@franklin.captures'
 ---
 
 There is a peculiar anxiety that accompanies modern travel. It begins the moment you land in a new city — the quiet panic that you are not seeing enough, doing enough, experiencing enough. Guidebooks and Instagram feeds have conspired to convince us that a trip is only successful if every hour is accounted for, every landmark checked off a list.
