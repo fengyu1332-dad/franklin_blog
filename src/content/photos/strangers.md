@@ -1,8 +1,9 @@
 ---
-src: https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&h=1000&fit=crop
-alt: Portrait
-caption: Strangers
-width: 800
-height: 1000
+src: /media/138e2a0a-d96e-49be-b16c-614be941853a.png
+alt: 'Once you’ve been to Huangshan, all other mountains pale in comparison.'
+caption: Huangshan，Anhui，China，2025
+width: 1195
+height: 896
 status: published
 ---
+

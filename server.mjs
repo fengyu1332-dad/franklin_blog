@@ -173,7 +173,18 @@ const upload = multer({
   },
 });
 
-app.post("/api/upload", requireAuth, upload.single("file"), async (req, res) => {
+/** Multer errors (fileFilter rejections, size limits, etc.) surface as thrown
+ *  errors from the middleware chain. Convert them to clean JSON responses
+ *  instead of Express's default HTML 500. */
+function uploadErrorHandler(err, _req, res, next) {
+  if (err) {
+    const status = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+    return res.status(status).json({ error: err.message || "Upload rejected" });
+  }
+  next();
+}
+
+app.post("/api/upload", requireAuth, upload.single("file"), uploadErrorHandler, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
