@@ -68,7 +68,7 @@ export function ArticleCard({ article, featured = false, index }: ArticleCardPro
             src={article.author.avatar} 
             alt={article.author.name}
             referrerPolicy="no-referrer"
-            className="h-8 w-8 rounded-full object-cover grayscale"
+            className="h-8 w-auto shrink-0 rounded-md grayscale"
           />
           <div className="flex flex-col">
             <span className="text-xs font-medium">{article.author.name}</span>

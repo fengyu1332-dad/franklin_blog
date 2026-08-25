@@ -29,12 +29,12 @@ export function About() {
             className="flex flex-col md:flex-row gap-12 lg:gap-20 items-start"
           >
             <div className="w-full md:w-1/2">
-              <div className="aspect-[4/5] overflow-hidden rounded-sm bg-ink/5 sticky top-24">
+              <div className="overflow-hidden rounded-2xl bg-ink/5 sticky top-24">
                 <FadeImage 
                   src={defaultAuthor.avatar}
                   alt={defaultAuthor.name} 
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
+                  className="w-full h-auto"
                 />
               </div>
             </div>

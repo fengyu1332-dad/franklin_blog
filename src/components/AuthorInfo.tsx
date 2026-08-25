@@ -12,7 +12,7 @@ export function AuthorInfo({ author }: AuthorInfoProps) {
           src={author.avatar} 
           alt={author.name} 
           referrerPolicy="no-referrer"
-          className="h-24 w-24 rounded-full object-cover grayscale"
+          className="h-auto w-24 shrink-0 rounded-xl grayscale"
         />
         <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
           <h3 className="font-serif text-2xl font-medium tracking-tight text-ink">

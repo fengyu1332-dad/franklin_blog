@@ -104,7 +104,7 @@ export function Lab() {
                       <FadeImage
                         src={defaultAuthor.avatar}
                         alt={defaultAuthor.name}
-                        className="h-8 w-8 rounded-full object-cover grayscale"
+                        className="h-8 w-auto shrink-0 rounded-md grayscale"
                       />
                       <div>
                         <span className="text-xs font-medium">{defaultAuthor.name}</span>
