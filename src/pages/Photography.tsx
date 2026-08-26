@@ -15,7 +15,7 @@ export function Photography() {
     <div className="flex min-h-screen flex-col bg-paper">
       <Helmet>
         <title>Photography — {siteConfig.name}</title>
-        <meta name="description" content="A collection of moments captured across different cities and landscapes. Focusing on light, shadow, and the quiet spaces in between." />
+        <meta name="description" content="A collection of moments captured across different cities and landscapes. Focusing on light, shadow, and the quiet spaces in between. All photographs are real-world shots, enhanced with my self-developed AI skill for master-level refinement" />
         <meta property="og:title" content={`Photography — ${siteConfig.name}`} />
         <meta property="og:description" content="A collection of moments captured across different cities and landscapes." />
         <meta property="og:image" content={siteConfig.ogImage} />
@@ -33,11 +33,12 @@ export function Photography() {
             className="mb-12"
           >
             <h1 className="font-serif text-5xl font-medium tracking-tight text-ink md:text-6xl">
-              Selected Works
+              The World Through My Eyes
             </h1>
             <p className="mt-4 text-lg text-ink-light max-w-2xl">
               A collection of moments captured across different cities and landscapes.
               Focusing on light, shadow, and the quiet spaces in between.
+              All photographs are real-world shots, enhanced with my self-developed AI skill for master-level refinement
             </p>
           </motion.div>
         </div>
