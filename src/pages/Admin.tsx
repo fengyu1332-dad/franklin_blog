@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
-import { Plus, Edit2, Trash2, ArrowLeft, FileText, LogOut, FlaskConical, Camera, Eye } from "lucide-react";
+import { Plus, Edit2, Trash2, ArrowLeft, FileText, LogOut, FlaskConical, Camera, Eye, Settings } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/Toast";
 import { Login } from "./Login";
 import { ArticleEditor, type ArticleData } from "../components/admin/ArticleEditor";
 import { LabEditor, type ProjectData } from "../components/admin/LabEditor";
 import { PhotoEditor, type PhotoData } from "../components/admin/PhotoEditor";
+import { SiteSettings } from "../components/admin/SiteSettings";
 import { ConfirmDialog } from "../components/admin/ConfirmDialog";
 
-type ContentType = "articles" | "lab" | "photos";
+type ContentType = "articles" | "lab" | "photos" | "site";
 
 interface ArticleMeta {
   slug: string;
@@ -45,6 +46,7 @@ const TAB_LABELS: Record<ContentType, { label: string; icon: typeof FileText }> 
   articles: { label: "Articles", icon: FileText },
   lab: { label: "Lab", icon: FlaskConical },
   photos: { label: "Photos", icon: Camera },
+  site: { label: "Site", icon: Settings },
 };
 
 export function Admin() {
@@ -87,9 +89,13 @@ export function Admin() {
   }, []);
 
   useEffect(() => {
+    if (contentType === "site") {
+      setLoading(false);
+      return;
+    }
     fetchItems();
     fetchTags();
-  }, [fetchItems, fetchTags]);
+  }, [fetchItems, fetchTags, contentType]);
 
   async function handleSave(data: ArticleData | ProjectData | PhotoData) {
     const headers = { "Content-Type": "application/json" as const, ...authHeaders() };
@@ -293,6 +299,41 @@ export function Admin() {
   }
 
   // ─── List View ───
+
+  if (contentType === "site") {
+    return (
+      <div className="flex min-h-screen flex-col bg-paper">
+        <header className="border-b border-ink/10">
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-6">
+              <h1 className="font-serif text-xl font-semibold tracking-wide text-ink">Admin</h1>
+              <nav className="flex items-center gap-1">
+                {(Object.entries(TAB_LABELS) as [ContentType, { label: string; icon: typeof FileText }][]).map(([key, { label, icon: Icon }]) => (
+                  <button
+                    key={key}
+                    onClick={() => switchType(key)}
+                    className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
+                      contentType === key ? "bg-ink text-white" : "text-ink-light hover:text-ink hover:bg-ink/5"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </button>
+                ))}
+              </nav>
+            </div>
+            <button onClick={logout} className="inline-flex items-center gap-2 rounded-sm border border-ink/10 px-3 py-2 text-sm font-medium text-ink-light hover:text-ink transition-colors">
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        </header>
+        <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <SiteSettings />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       <header className="border-b border-ink/10">

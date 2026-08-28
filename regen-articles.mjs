@@ -39,14 +39,6 @@ function listArticles({ includeDrafts = false } = {}) {
 }
 
 function generateArticlesTs(articles) {
-  const defaultAuthor = `{
-  name: "Franklin HUANG",
-  avatar: "/avatar.png",
-  bio: "A high school student captivated by engineering, physics, and the natural world. Building things, asking why, and learning out loud.",
-  twitter: "@franklinhuang",
-  instagram: "@franklin.captures"
-}`;
-
   const items = articles
     .map(
       (a) => `  {
@@ -65,7 +57,9 @@ function generateArticlesTs(articles) {
     )
     .join(",\n");
 
-  const ts = `export interface Author {
+  const ts = `import siteAuthorData from "./site-author.json";
+
+export interface Author {
   name: string;
   avatar: string;
   bio: string;
@@ -88,7 +82,7 @@ export interface Article {
   contentFile: string;
 }
 
-export const defaultAuthor: Author = ${defaultAuthor};
+export const defaultAuthor: Author = siteAuthorData as Author;
 
 export const articles: Article[] = [
 ${items}

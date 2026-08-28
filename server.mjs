@@ -11,6 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ARTICLES_DIR = path.join(__dirname, "src", "content", "articles");
 const ARTICLES_TS = path.join(__dirname, "src", "data", "articles.ts");
 const UPLOADS_DIR = path.join(__dirname, "public", "media");
+const SITE_AUTHOR_JSON = path.join(__dirname, "src", "data", "site-author.json");
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 if (!ADMIN_PASSWORD) {
@@ -835,6 +836,45 @@ app.delete("/api/photos/:slug", requireAuth, assertValidSlug, (req, res) => {
   generatePhotosTs(photos);
 
   res.json({ deleted: req.params.slug });
+});
+
+// ─── Site author config (About / Lab / Essays avatar + bio, editable in Admin → Site) ───
+
+app.get("/api/site-config", (_req, res) => {
+  try {
+    if (!fs.existsSync(SITE_AUTHOR_JSON)) {
+      return res.json({ name: "", avatar: "", bio: "", twitter: "", instagram: "" });
+    }
+    const data = JSON.parse(fs.readFileSync(SITE_AUTHOR_JSON, "utf8"));
+    res.json(data);
+  } catch (err) {
+    console.error("[site-config] read failed:", err);
+    res.status(500).json({ error: "Failed to read site config" });
+  }
+});
+
+app.put("/api/site-config", requireAuth, (req, res) => {
+  try {
+    const { name, avatar, bio, twitter, instagram } = req.body || {};
+    if (typeof avatar !== "string" || !avatar.trim()) {
+      return res.status(400).json({ error: "Avatar URL is required" });
+    }
+    if (!/^(\/|https?:\/\/)/.test(avatar.trim())) {
+      return res.status(400).json({ error: "Avatar must be a local path (/...) or an absolute http(s) URL" });
+    }
+    const cleaned = {
+      name: typeof name === "string" ? name : "",
+      avatar: avatar.trim(),
+      bio: typeof bio === "string" ? bio : "",
+      twitter: typeof twitter === "string" ? twitter : "",
+      instagram: typeof instagram === "string" ? instagram : "",
+    };
+    writeFileWithRetry(SITE_AUTHOR_JSON, JSON.stringify(cleaned, null, 2) + "\n");
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[site-config] write failed:", err);
+    res.status(500).json({ error: "Failed to save site config" });
+  }
 });
 
 // ─── SEO: dynamic RSS / sitemap / robots (registered before static files so they win) ───
